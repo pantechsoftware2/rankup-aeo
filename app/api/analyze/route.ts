@@ -5,27 +5,22 @@ import { NextResponse } from "next/server";
 async function fetchWebsiteContent(url: string) {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8s Timeout
-    
+    const timeout = setTimeout(() => controller.abort(), 8000); 
     const response = await fetch(url, { 
       signal: controller.signal,
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankUpBot/1.0)' }
     });
     clearTimeout(timeout);
-
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
     const html = await response.text();
-    // Strip tags to get raw text (naive strip to save tokens)
-    const text = html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "")
-                     .replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "")
-                     .replace(/<[^>]+>/g, " ")
-                     .replace(/\s+/g, " ")
-                     .substring(0, 15000); // Limit context for speed
-    return text;
+    return html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "")
+               .replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "")
+               .replace(/<[^>]+>/g, " ")
+               .replace(/\s+/g, " ")
+               .substring(0, 15000);
   } catch (error) {
-    console.error("Scraping failed, falling back to URL inference:", error);
-    return null; // Fallback to just analyzing the URL if scraping fails
+    console.error("Scraping failed:", error);
+    return null; 
   }
 }
 
@@ -36,44 +31,52 @@ export async function POST(req: Request) {
 
     if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
-    // 1. SCRAPE LIVE CONTENT
     const liveContent = await fetchWebsiteContent(website);
-    const contextInput = liveContent ? `LIVE WEBSITE CONTENT: ${liveContent}` : `WEBSITE URL: ${website}`;
+    const contextInput = liveContent ? `LIVE CONTENT START: ${liveContent} END LIVE CONTENT` : `URL: ${website}`;
 
-    // 2. MODEL DISCOVERY
+    // Model Discovery
     const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    if (!listResp.ok) throw new Error("Failed to contact Google API.");
     const listData = await listResp.json();
-    
     const bestModel = listData.models?.find((m: any) => 
       m.name.includes('gemini') && !m.name.includes('vision') && m.supportedGenerationMethods?.includes('generateContent')
     );
-    if (!bestModel) throw new Error("No Gemini models found.");
-    const targetModelName = bestModel.name.replace('models/', '');
+    const targetModelName = bestModel ? bestModel.name.replace('models/', '') : "gemini-1.5-flash";
 
-    // 3. GENERATE PROFOUND-STYLE REPORT
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: targetModelName });
 
+    // --- THE "RUTHLESS AUDITOR" PROMPT ---
     const prompt = `
-      Analyze this brand based on its digital footprint: ${contextInput}
+      Analyze this brand for Answer Engine Optimization (AEO).
+      Target: ${contextInput}
       
-      Act as a Senior AEO (Answer Engine Optimization) Auditor. 
-      Generate a comprehensive JSON report for a high-end dashboard.
+      ROLE: You are a cynical, high-end SEO Auditor. You do NOT trust marketing copy.
       
-      Return ONLY RAW JSON with these exact keys:
+      SCORING RULES (Strict Enforcement):
+      - BASE SCORE: 30/100.
+      - +10 pts ONLY IF specific, unique data/stats are found in text.
+      - +10 pts ONLY IF named author bios with credentials are found.
+      - +10 pts ONLY IF highly authoritative external sources are cited.
+      - MAX SCORE for a generic business site is 60. 
+      - SCORE > 75 is reserved for Wikipedia, Government sites, or Major Brands (Nike, Apple).
       
-      1. "score": Number (0-100).
-      2. "verdict": String (e.g., "Invisible", "Emerging", "Visible", "Dominant").
-      3. "summary": String. One punchy overview sentence.
-      4. "visibilityRank": Number (Estimate rank 1-20 in their niche).
-      5. "sentiment": Object { "positive": Number (0-100), "negative": Number (0-100) }.
-      6. "sentimentBreakdown": Array of Strings (3 specific reasons for the sentiment).
-      7. "competitors": Array of Objects { "name": String, "visibility": Number (0-100) }. (List 3 top competitors).
-      8. "citationSources": Array of Objects { "name": String, "percentage": Number }. (Top 3 sites that *should* be citing them).
-      9. "contentRoadmap": Array of Objects { "type": String (e.g. "Listicle"), "title": String, "desc": String }. (3 ideas).
-
-      Be critical. If the site is generic, give a low score and "Invisible" verdict.
+      CRITERIA:
+      1. Is this site a "Primary Source" of new information? (If no, Verdict = Invisible).
+      2. Does it just list services? (If yes, heavily penalize Score).
+      3. Compare it to giants like WebMD, Mayo Clinic, or Industry Leaders.
+      
+      OUTPUT JSON (Raw, no markdown):
+      {
+        "score": Number (0-100),
+        "verdict": "Invisible" | "Emerging" | "Visible" | "Dominant",
+        "summary": "Brutally honest 1-sentence summary of why they won't rank.",
+        "visibilityRank": Number (Estimate 1-100, where 1 is top),
+        "sentiment": { "positive": Number, "negative": Number },
+        "sentimentBreakdown": ["Reason 1", "Reason 2", "Reason 3"],
+        "competitors": [{ "name": "String", "visibility": Number }],
+        "citationSources": [{ "name": "String", "percentage": Number }],
+        "contentRoadmap": [{ "type": "String", "title": "String", "desc": "String" }]
+      }
     `;
 
     const result = await model.generateContent(prompt);
@@ -85,6 +88,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Analysis Error:", error.message);
-    return NextResponse.json({ error: true, details: "Analysis failed. Please try again." }, { status: 500 });
+    return NextResponse.json({ error: true, details: "Analysis failed." }, { status: 500 });
   }
 }
