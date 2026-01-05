@@ -1,25 +1,29 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-// Helper: Scrape text from a URL
+// 1. ROBUST SCRAPER (With User-Agent Rotation simulation)
 async function fetchWebsiteContent(url: string) {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); 
+    const timeout = setTimeout(() => controller.abort(), 6000); // 6s limit to save time for AI
     const response = await fetch(url, { 
       signal: controller.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankUpBot/1.0)' }
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml'
+      }
     });
     clearTimeout(timeout);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(`Status: ${response.status}`);
     const html = await response.text();
-    return html.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "")
-               .replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "")
+    // Clean heavily to maximize token density
+    return html.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+               .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
                .replace(/<[^>]+>/g, " ")
                .replace(/\s+/g, " ")
                .substring(0, 15000);
   } catch (error) {
-    console.error("Scraping failed:", error);
+    console.log("Scrape failed, using inference mode.");
     return null; 
   }
 }
@@ -32,50 +36,69 @@ export async function POST(req: Request) {
     if (!apiKey) return NextResponse.json({ error: "API Key missing" }, { status: 500 });
 
     const liveContent = await fetchWebsiteContent(website);
-    const contextInput = liveContent ? `LIVE CONTENT START: ${liveContent} END LIVE CONTENT` : `URL: ${website}`;
-
-    // Model Discovery
-    const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    const listData = await listResp.json();
-    const bestModel = listData.models?.find((m: any) => 
-      m.name.includes('gemini') && !m.name.includes('vision') && m.supportedGenerationMethods?.includes('generateContent')
-    );
-    const targetModelName = bestModel ? bestModel.name.replace('models/', '') : "gemini-1.5-flash";
+    
+    // 2. CONTEXT PREPARATION
+    // If scrape fails, we force the AI to infer from the URL alone.
+    const contextInput = liveContent 
+      ? `LIVE SITE TEXT: ${liveContent}` 
+      : `URL ONLY (INFER CONTEXT): ${website}`;
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: targetModelName });
+    // Use the latest model for best reasoning
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // --- THE "RUTHLESS AUDITOR" PROMPT ---
+    // 3. THE "CHAIN OF THOUGHT" PROMPT
     const prompt = `
-      Analyze this brand for Answer Engine Optimization (AEO).
-      Target: ${contextInput}
+      Perform a deep-dive AEO (Answer Engine Optimization) Audit on this target.
+      TARGET: ${contextInput}
       
-      ROLE: You are a cynical, high-end SEO Auditor. You do NOT trust marketing copy.
+      --- PHASE 1: IDENTIFICATION (CRITICAL) ---
+      First, analyze the text (or URL) to determine the EXACT Industry, Niche, and Target Audience.
+      (e.g., If "stayiq.ai", Industry="Hospitality Tech", Niche="Short Term Rental Analytics").
       
-      SCORING RULES (Strict Enforcement):
-      - BASE SCORE: 30/100.
-      - +10 pts ONLY IF specific, unique data/stats are found in text.
-      - +10 pts ONLY IF named author bios with credentials are found.
-      - +10 pts ONLY IF highly authoritative external sources are cited.
-      - MAX SCORE for a generic business site is 60. 
-      - SCORE > 75 is reserved for Wikipedia, Government sites, or Major Brands (Nike, Apple).
+      --- PHASE 2: COMPETITIVE MAPPING ---
+      Identify the top 3 GLOBAL leaders in that specific niche. 
+      (e.g., If "Rental Analytics", use "AirDNA", "PriceLabs").
+      *IF THE SITE IS EMPTY: Use the inferred industry to pick standard competitors.*
       
-      CRITERIA:
-      1. Is this site a "Primary Source" of new information? (If no, Verdict = Invisible).
-      2. Does it just list services? (If yes, heavily penalize Score).
-      3. Compare it to giants like WebMD, Mayo Clinic, or Industry Leaders.
-      
-      OUTPUT JSON (Raw, no markdown):
+      --- PHASE 3: SCORING & GAPS ---
+      Compare the Target against those Leaders.
+      - Content Score: Do they answer user questions?
+      - Authority Score: Do they have data/citations?
+      - Tech Score: Is the structure clear for AI?
+
+      --- OUTPUT FORMAT ---
+      Return ONLY valid JSON. No Markdown.
       {
-        "score": Number (0-100),
-        "verdict": "Invisible" | "Emerging" | "Visible" | "Dominant",
-        "summary": "Brutally honest 1-sentence summary of why they won't rank.",
-        "visibilityRank": Number (Estimate 1-100, where 1 is top),
-        "sentiment": { "positive": Number, "negative": Number },
-        "sentimentBreakdown": ["Reason 1", "Reason 2", "Reason 3"],
-        "competitors": [{ "name": "String", "visibility": Number }],
-        "citationSources": [{ "name": "String", "percentage": Number }],
-        "contentRoadmap": [{ "type": "String", "title": "String", "desc": "String" }]
+        "meta": {
+          "industry": "String",
+          "niche": "String",
+          "audience": "String"
+        },
+        "scores": {
+          "overall": Number (0-100),
+          "content": Number (0-100),
+          "authority": Number (0-100),
+          "technical": Number (0-100)
+        },
+        "verdict": {
+          "status": "Invisible" | "Emerging" | "Visible" | "Dominant",
+          "summary": "String (2 sentences max)"
+        },
+        "competitors": [
+          { "name": "String", "traffic_share": Number (Estimate 0-100) } 
+        ],
+        "missed_opportunities": [
+          // Specific questions users ask that this site FAILS to answer
+          { "question": "String", "volume": "High" | "Med" | "Low" },
+          { "question": "String", "volume": "High" | "Med" | "Low" },
+          { "question": "String", "volume": "High" | "Med" | "Low" }
+        ],
+        "roadmap": [
+          { "title": "String", "difficulty": "Hard" | "Med" | "Easy", "impact": "High", "desc": "String" },
+          { "title": "String", "difficulty": "Hard" | "Med" | "Easy", "impact": "High", "desc": "String" },
+          { "title": "String", "difficulty": "Hard" | "Med" | "Easy", "impact": "High", "desc": "String" }
+        ]
       }
     `;
 
@@ -87,7 +110,7 @@ export async function POST(req: Request) {
     return NextResponse.json(JSON.parse(cleanJson));
 
   } catch (error: any) {
-    console.error("Analysis Error:", error.message);
-    return NextResponse.json({ error: true, details: "Analysis failed." }, { status: 500 });
+    console.error("Analysis Failed:", error);
+    return NextResponse.json({ error: true, details: "Audit Engine Overload. Please retry." }, { status: 500 });
   }
 }
