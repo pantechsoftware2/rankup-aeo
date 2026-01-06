@@ -8,13 +8,24 @@ async function getBestModel(apiKey: string) {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
     const data = await response.json();
     const models = data.models || [];
-    const priority = ['gemini-1.5-pro-latest', 'gemini-1.5-pro-001', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+
+    // 1. Try to find the BEST model (Pro)
+    const priority = ['gemini-1.5-pro', 'gemini-1.5-pro-latest', 'gemini-1.5-pro-001'];
     for (const p of priority) {
       const found = models.find((m: any) => m.name.includes(p));
       if (found) return found.name.replace('models/', '');
     }
-    return 'gemini-pro';
-  } catch (e) { return "gemini-pro"; }
+
+    // 2. If no Pro, find ANY model that generates text (Panic Mode)
+    const anyGenModel = models.find((m: any) => m.supportedGenerationMethods?.includes('generateContent'));
+    if (anyGenModel) return anyGenModel.name.replace('models/', '');
+
+    // 3. Absolute last resort (Flash is safest)
+    return 'gemini-1.5-flash';
+  } catch (e) {
+    console.error("Model list failed", e);
+    return "gemini-1.5-flash"; 
+  }
 }
 
 function extractMetaTags(html: string) {
@@ -48,22 +59,22 @@ export async function POST(req: Request) {
       if (response.ok) {
         const text = await response.text();
         metaTags = extractMetaTags(text);
-        // Keep visible text for the "Clarity Audit"
         liveContent = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 30000);
       }
     } catch (e) { console.log("Scrape warning"); }
     clearTimeout(timeout);
 
-    // 2. CONTEXT PREP
+    // 2. DUAL BRAIN PROMPT
     const contextInput = `
       URL: ${website}
-      HIDDEN META TITLE: ${metaTags.title} (Use this for accuracy)
-      HIDDEN META DESC: ${metaTags.description} (Use this for accuracy)
-      VISIBLE BODY TEXT: ${liveContent} (Critique this for clarity)
+      HIDDEN META TITLE: ${metaTags.title}
+      HIDDEN META DESC: ${metaTags.description}
+      VISIBLE BODY TEXT: ${liveContent}
     `;
 
-    // 3. THE "DUAL BRAIN" PROMPT
     const modelName = await getBestModel(apiKey);
+    console.log("Using Model:", modelName); 
+    
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: modelName });
 

@@ -9,21 +9,21 @@ async function getBestModel(apiKey: string) {
     const data = await response.json();
     const models = data.models || [];
 
-    const priority = [
-      'gemini-1.5-pro-latest',
-      'gemini-1.5-pro-001', 
-      'gemini-1.5-pro',
-      'gemini-1.0-pro',
-      'gemini-pro'
-    ];
-    
+    // 1. Try Pro
+    const priority = ['gemini-1.5-pro', 'gemini-1.5-pro-latest', 'gemini-1.5-pro-001'];
     for (const p of priority) {
       const found = models.find((m: any) => m.name.includes(p));
       if (found) return found.name.replace('models/', '');
     }
-    return 'gemini-pro';
+
+    // 2. Try Any Text Model
+    const anyGenModel = models.find((m: any) => m.supportedGenerationMethods?.includes('generateContent'));
+    if (anyGenModel) return anyGenModel.name.replace('models/', '');
+
+    // 3. Fallback
+    return 'gemini-1.5-flash';
   } catch (e) {
-    return "gemini-pro";
+    return "gemini-1.5-flash";
   }
 }
 
@@ -34,7 +34,6 @@ export async function POST(req: Request) {
     
     const cleanText = (raw_text || "").substring(0, 30000);
 
-    // SMART SELECTOR
     const modelName = await getBestModel(apiKey!);
     const genAI = new GoogleGenerativeAI(apiKey!);
     const model = genAI.getGenerativeModel({ model: modelName });
