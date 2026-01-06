@@ -1,31 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-export const maxDuration = 60; // Vercel Pro Limit
-
-// HELPER: Ask Google which models are available for this Key
-async function getBestModel(apiKey: string) {
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-    const data = await response.json();
-    const models = data.models || [];
-
-    // Prioritize models in this order
-    const priority = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro', 'gemini-pro'];
-    
-    for (const p of priority) {
-      const found = models.find((m: any) => m.name.includes(p));
-      if (found) return found.name.replace('models/', '');
-    }
-    
-    // Fallback to the first available generative model
-    const fallback = models.find((m: any) => m.supportedGenerationMethods.includes('generateContent'));
-    return fallback ? fallback.name.replace('models/', '') : 'gemini-pro';
-  } catch (e) {
-    console.error("Model fetch failed, defaulting to gemini-pro");
-    return "gemini-pro";
-  }
-}
+// Vercel Pro allows up to 60s (or more).
+export const maxDuration = 60; 
 
 export async function POST(req: Request) {
   try {
@@ -33,33 +10,37 @@ export async function POST(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return NextResponse.json({ error: true, details: "API Key Missing" });
 
-    // 1. ROBUST SCRAPE
+    // 1. DEEP SCRAPE (Wait up to 10s if needed)
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); 
+    const timeout = setTimeout(() => controller.abort(), 10000); 
+    
     let liveContent = "";
     try {
       const response = await fetch(website, { 
         signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankUpBot/1.0)' }
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
+        }
       });
       if (response.ok) {
         const text = await response.text();
-        liveContent = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 20000);
+        // UNLEASHED: Read 30,000 characters. Capture everything.
+        liveContent = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 30000);
       }
-    } catch (e) { console.log("Scrape warning"); }
+    } catch (e) {
+      console.log("Scrape warning:", e);
+    }
     clearTimeout(timeout);
 
     const contextInput = liveContent || `URL: ${website}`;
 
-    // 2. AUTO-DETECT MODEL
-    const modelName = await getBestModel(apiKey);
-    console.log("Selected Model:", modelName); // Debug log
-
+    // 2. USE THE FERRARI: GEMINI 1.5 PRO
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    // We hardcode the best model because you paid for it.
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); 
 
     const prompt = `
-      Analyze this brand identity.
+      Analyze this brand identity deeply.
       SOURCE: ${contextInput}
       
       Task:
@@ -83,7 +64,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ...JSON.parse(text), raw_text: liveContent });
 
   } catch (error: any) {
-    console.error("Fast Scan Error:", error.message);
+    console.error("Fast Scan Error:", error);
     return NextResponse.json({ error: true, details: error.message });
   }
 }
