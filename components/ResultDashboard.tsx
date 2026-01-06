@@ -115,7 +115,20 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
             <ScoreBar label="Domain Authority" score={result.scores?.authority} />
             <ScoreBar label="Technical AEO Schema" score={result.scores?.technical} />
           </div>
-
+            {/* CLARITY WARNING */}
+          {result.clarity_audit && !result.clarity_audit.is_clear && (
+            <div className="mb-6 p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20 flex flex-col md:flex-row gap-4 items-start animate-in slide-in-from-left duration-700">
+              <div className="p-2 bg-yellow-500/10 rounded-lg">
+                <span className="text-yellow-500 text-xl">⚠️</span>
+              </div>
+              <div>
+                <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-widest mb-2">Clarity Warning</h4>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  {result.clarity_audit.critique || "We identified your true category by decoding your hidden metadata, but your public homepage text is too vague. Human visitors may not understand what you do."}
+                </p>
+              </div>
+            </div>
+          )}
           {/* MARKET REALITY (Competitors) */}
           <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">

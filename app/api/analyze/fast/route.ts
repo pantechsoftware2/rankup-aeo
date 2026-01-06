@@ -3,32 +3,27 @@ import { NextResponse } from "next/server";
 
 export const maxDuration = 60; 
 
-// HELPER: Ask Google for the exact model name to avoid 404s
 async function getBestModel(apiKey: string) {
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
     const data = await response.json();
     const models = data.models || [];
-
-    // STRICT PRIORITY: Look for the best available PRO model
-    const priority = [
-      'gemini-1.5-pro-latest',
-      'gemini-1.5-pro-001', 
-      'gemini-1.5-pro',
-      'gemini-1.0-pro',
-      'gemini-pro'
-    ];
-    
+    const priority = ['gemini-1.5-pro-latest', 'gemini-1.5-pro-001', 'gemini-1.5-pro', 'gemini-1.0-pro'];
     for (const p of priority) {
       const found = models.find((m: any) => m.name.includes(p));
       if (found) return found.name.replace('models/', '');
     }
-    
-    return 'gemini-pro'; // Ultimate fallback
-  } catch (e) {
-    console.error("Model list failed", e);
-    return "gemini-pro";
-  }
+    return 'gemini-pro';
+  } catch (e) { return "gemini-pro"; }
+}
+
+function extractMetaTags(html: string) {
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i);
+  return {
+    title: titleMatch ? titleMatch[1] : "",
+    description: descMatch ? descMatch[1] : ""
+  };
 }
 
 export async function POST(req: Request) {
@@ -41,33 +36,60 @@ export async function POST(req: Request) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000); 
     let liveContent = "";
+    let metaTags = { title: "", description: "" };
+
     try {
       const response = await fetch(website, { 
         signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankUpBot/1.0)' }
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
+        }
       });
       if (response.ok) {
         const text = await response.text();
+        metaTags = extractMetaTags(text);
+        // Keep visible text for the "Clarity Audit"
         liveContent = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 30000);
       }
     } catch (e) { console.log("Scrape warning"); }
     clearTimeout(timeout);
 
-    const contextInput = liveContent || `URL: ${website}`;
+    // 2. CONTEXT PREP
+    const contextInput = `
+      URL: ${website}
+      HIDDEN META TITLE: ${metaTags.title} (Use this for accuracy)
+      HIDDEN META DESC: ${metaTags.description} (Use this for accuracy)
+      VISIBLE BODY TEXT: ${liveContent} (Critique this for clarity)
+    `;
 
-    // 2. SMART MODEL SELECTOR
+    // 3. THE "DUAL BRAIN" PROMPT
     const modelName = await getBestModel(apiKey);
-    console.log("Using Model:", modelName); // This will show us exactly what works
-
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: modelName });
 
     const prompt = `
-      Analyze brand: ${contextInput}
-      Task: Identify Industry, Niche, and 3 ACTUAL Competitors.
+      Analyze this brand.
+      DATA SOURCE: ${contextInput}
+      
+      TASK 1: ACCURACY (The "Goated" Part)
+      Use the HIDDEN META TAGS to identify the *exact* Industry & Niche.
+      (e.g., if Meta says "Airbnb Automation", do NOT say "General Real Estate").
+      Identify 3 TRUE competitors based on this accurate niche.
+
+      TASK 2: CLARITY AUDIT (The "Tough Love" Part)
+      Ignore the Meta Tags now. Look ONLY at the VISIBLE BODY TEXT.
+      Does the visible text *explicitly* state what the product is? 
+      Or is it vague (e.g. "Unlock potential")?
+      
+      If Vague: Set 'is_clear' to false. Write a critique saying: "We identified you as [Niche] by decoding your metadata, but your homepage text is too vague for human users."
+
       RETURN JSON ONLY:
       {
         "meta": { "industry": "String", "niche": "String" },
+        "clarity_audit": {
+           "is_clear": Boolean,
+           "critique": "String"
+        },
         "competitors": [
           { "name": "Brand A", "traffic_share": 80 },
           { "name": "Brand B", "traffic_share": 60 },
