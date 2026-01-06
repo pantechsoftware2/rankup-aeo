@@ -8,6 +8,7 @@ const Badge = ({ children, color = 'gray' }: { children: React.ReactNode, color?
     green: 'bg-green-500/10 text-green-400 border-green-500/20',
     red: 'bg-red-500/10 text-red-400 border-red-500/20',
     blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
   };
   return (
     <span className={`px-3 py-1 rounded-md text-[10px] font-mono uppercase tracking-widest border ${colors[color] || colors.gray}`}>
@@ -16,18 +17,29 @@ const Badge = ({ children, color = 'gray' }: { children: React.ReactNode, color?
   );
 };
 
-// A "Ghost" Bar for loading states (Shimmer Effect)
+// CLEANER FUNCTION: Turns "COULD NOT BE DETERMINED..." into "UNDEFINED"
+const cleanText = (text: string) => {
+  if (!text) return "UNKNOWN";
+  const upper = text.toUpperCase();
+  if (upper.includes("COULD NOT") || upper.includes("EMPTY") || upper.includes("UNDEFINED")) return "UNDEFINED";
+  if (upper.includes("MISSING")) return "MISSING DATA";
+  return text;
+};
+
 const LoadingBar = () => (
   <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mb-4 relative">
     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_1s_infinite] -translate-x-full"></div>
   </div>
 );
 
-const ScoreBar = ({ label, score }: { label: string, score: number | undefined }) => (
-  <div className="mb-4">
-    <div className="flex justify-between text-xs mb-2 text-gray-400 font-mono">
-      <span>{label}</span>
-      <span>{score !== undefined ? `${score}/100` : '...'}</span>
+const ScoreBar = ({ label, score, subLabel }: { label: string, score: number | undefined, subLabel?: string }) => (
+  <div className="mb-5">
+    <div className="flex justify-between items-end mb-2">
+      <div className="flex flex-col">
+        <span className="text-xs text-gray-300 font-bold font-space">{label}</span>
+        {subLabel && <span className="text-[10px] text-gray-500 mt-0.5">{subLabel}</span>}
+      </div>
+      <span className="text-xs text-gray-400 font-mono">{score !== undefined ? `${score}/100` : '...'}</span>
     </div>
     {score !== undefined ? (
       <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
@@ -44,7 +56,6 @@ const ScoreBar = ({ label, score }: { label: string, score: number | undefined }
 
 export default function ResultDashboard({ result, onReset }: { result: any, onReset: () => void }) {
   
-  // 1. ERROR STATE (The Red Box Debugger)
   if (result.error) return (
     <div className="w-full max-w-lg mx-auto mt-20 p-6 bg-red-900/20 border border-red-500/50 rounded-xl text-center animate-in fade-in zoom-in duration-300">
       <h3 className="text-red-400 font-bold mb-2 uppercase tracking-widest text-xs">System Error</h3>
@@ -60,9 +71,13 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
     </div>
   );
 
-  // 2. LOADING STATE DETECTION
-  // If 'scores' is missing, it means we are in Phase 1 (Fast Scan) and Phase 2 (Deep Scan) is still running.
-  const isDeepLoading = !result.scores; 
+  const isDeepLoading = !result.scores;
+  const industry = cleanText(result.meta?.industry);
+  const niche = cleanText(result.meta?.niche);
+
+  // Determine Badge Colors based on the "Cleaned" text
+  const industryColor = industry === "UNDEFINED" ? "red" : "blue";
+  const nicheColor = niche === "UNDEFINED" ? "red" : "gray";
 
   return (
     <div className="w-full max-w-6xl mx-auto pb-32 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -71,8 +86,8 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
       <div className="flex justify-between items-center mb-12 border-b border-white/5 pb-6">
         <button onClick={onReset} className="text-xs font-mono text-gray-500 hover:text-white transition-colors">← NEW AUDIT</button>
         <div className="flex gap-3">
-          <Badge color="blue">{result.meta?.industry || 'Identifying...'}</Badge>
-          <Badge color="gray">{result.meta?.niche || 'Scanning...'}</Badge>
+          <Badge color={industryColor}>{industry}</Badge>
+          <Badge color={nicheColor}>{niche}</Badge>
           {isDeepLoading && <Badge color="green">ANALYZING STRATEGY...</Badge>}
         </div>
       </div>
@@ -99,7 +114,7 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
             {result.verdict?.status || "CALCULATING..."}
           </div>
           <p className="text-center text-gray-500 text-sm leading-relaxed max-w-sm">
-            {result.verdict?.summary || "Our AI is currently stress-testing your content against industry leaders to determine your true visibility."}
+            {result.verdict?.summary || "Our AI is currently stress-testing your content against industry leaders..."}
           </p>
         </div>
 
@@ -111,29 +126,36 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Performance Pillars
             </h3>
-            <ScoreBar label="Content Depth (E-E-A-T)" score={result.scores?.content} />
+            <ScoreBar 
+              label="Content Depth (E-E-A-T)" 
+              subLabel="Experience, Expertise, Authoritativeness, Trustworthiness"
+              score={result.scores?.content} 
+            />
             <ScoreBar label="Domain Authority" score={result.scores?.authority} />
             <ScoreBar label="Technical AEO Schema" score={result.scores?.technical} />
           </div>
-            {/* CLARITY WARNING */}
-          {result.clarity_audit && !result.clarity_audit.is_clear && (
-            <div className="mb-6 p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20 flex flex-col md:flex-row gap-4 items-start animate-in slide-in-from-left duration-700">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
-                <span className="text-yellow-500 text-xl">⚠️</span>
-              </div>
-              <div>
-                <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-widest mb-2">Clarity Warning</h4>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  {result.clarity_audit.critique || "We identified your true category by decoding your hidden metadata, but your public homepage text is too vague. Human visitors may not understand what you do."}
-                </p>
-              </div>
-            </div>
-          )}
-          {/* MARKET REALITY (Competitors) */}
+
+          {/* MARKET REALITY */}
           <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
               <span className="w-2 h-2 bg-purple-500 rounded-full"></span> Market Reality
             </h3>
+
+            {/* CLARITY WARNING */}
+            {result.clarity_audit && !result.clarity_audit.is_clear && (
+              <div className="mb-6 p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20 flex flex-col md:flex-row gap-3 items-start animate-in slide-in-from-left duration-700">
+                <div className="p-1.5 bg-yellow-500/10 rounded-lg shrink-0">
+                  <span className="text-yellow-500 text-lg">⚠️</span>
+                </div>
+                <div>
+                  <h4 className="text-yellow-500 text-[10px] font-bold uppercase tracking-widest mb-1">Clarity Warning</h4>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    {result.clarity_audit.critique || "We identified your true category via metadata, but your homepage text is too vague."}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-4">
               {result.competitors?.map((comp: any, i: number) => (
                 <div key={i} className="flex justify-between items-center text-sm p-3 rounded-lg bg-white/5 border border-white/5 animate-in slide-in-from-right duration-500" style={{ animationDelay: `${i * 100}ms` }}>

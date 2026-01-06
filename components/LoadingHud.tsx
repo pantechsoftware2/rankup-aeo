@@ -4,26 +4,25 @@ import { useEffect, useState } from 'react';
 
 const STEPS = [
   "Initializing Neural Link...",          // 0ms
-  "Resolving Domain Architecture...",     // 1000ms
-  "Extracting Semantic Entities...",      // 2500ms
-  "Evaluating E-E-A-T Signals...",        // 4500ms
-  "Cross-Referencing Knowledge Graphs...",// 7500ms
-  "Synthesizing Strategic Verdict..."     // 11000ms
+  "Resolving Domain Architecture...",     // 800ms
+  "Extracting Semantic Entities...",      // 2000ms
+  "Evaluating E-E-A-T Signals...",        // 3500ms
+  "Cross-Referencing Knowledge Graphs...",// 5500ms
+  "Synthesizing Strategic Verdict..."     // 8000ms
 ];
 
 export default function LoadingHud() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    // TIMELINE: How long to wait *after* each step before showing the next one.
-    // We space out the early steps so the user can actually read them.
+    // TIMELINE: Adjusted to be slightly snappier (Total ~9s)
     const timeline = [
-      1200,  // Step 0 -> 1 (Wait 1.2s)
-      1800,  // Step 1 -> 2 (Wait 1.8s)
-      2500,  // Step 2 -> 3 (Wait 2.5s - slowing down)
-      3000,  // Step 3 -> 4 (Deep thinking)
-      3500,  // Step 4 -> 5 (Deep thinking)
-      999999 // Step 5 stays until the API responds
+      800,   // Step 0 -> 1 (Fast start)
+      1200,  // Step 1 -> 2 (Scanning)
+      1500,  // Step 2 -> 3 (Thinking)
+      2000,  // Step 3 -> 4 (Deep Thinking)
+      2500,  // Step 4 -> 5 (Final Calc)
+      999999 // Step 5 stays until API finishes
     ];
 
     let stepIndex = 0;
