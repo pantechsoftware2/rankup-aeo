@@ -58,7 +58,12 @@ export async function POST(req: Request) {
     // doesn't have to scrape it again (saving 3s).
     return NextResponse.json({ ...data, raw_text: liveContent });
 
-  } catch (error) {
-    return NextResponse.json({ error: true });
+} catch (error: any) {
+    console.error("Fast Scan Error:", error);
+    // DEBUG UPDATE: Return the actual error message
+    return NextResponse.json({ 
+      error: true, 
+      details: error.message || "Fast Scan Internal Server Error" 
+    });
   }
 }

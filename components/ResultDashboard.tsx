@@ -1,5 +1,7 @@
 'use client';
 
+// --- UI HELPERS ---
+
 const Badge = ({ children, color = 'gray' }: { children: React.ReactNode, color?: string }) => {
   const colors: any = {
     gray: 'bg-white/5 text-gray-400 border-white/10',
@@ -14,10 +16,10 @@ const Badge = ({ children, color = 'gray' }: { children: React.ReactNode, color?
   );
 };
 
-// A "Ghost" Bar for loading states
+// A "Ghost" Bar for loading states (Shimmer Effect)
 const LoadingBar = () => (
-  <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mb-4">
-    <div className="h-full bg-gray-600 animate-[shimmer_1s_infinite] w-1/2"></div>
+  <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mb-4 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_1s_infinite] -translate-x-full"></div>
   </div>
 );
 
@@ -38,10 +40,29 @@ const ScoreBar = ({ label, score }: { label: string, score: number | undefined }
   </div>
 );
 
-export default function ResultDashboard({ result, onReset }: { result: any, onReset: () => void }) {
-  if (result.error) return <div className="text-red-500 text-center mt-10">Analysis Failed. Try again.</div>;
+// --- MAIN DASHBOARD COMPONENT ---
 
-  const isDeepLoading = !result.scores; // If scores are missing, we are still in Deep Scan mode
+export default function ResultDashboard({ result, onReset }: { result: any, onReset: () => void }) {
+  
+  // 1. ERROR STATE (The Red Box Debugger)
+  if (result.error) return (
+    <div className="w-full max-w-lg mx-auto mt-20 p-6 bg-red-900/20 border border-red-500/50 rounded-xl text-center animate-in fade-in zoom-in duration-300">
+      <h3 className="text-red-400 font-bold mb-2 uppercase tracking-widest text-xs">System Error</h3>
+      <p className="text-white font-mono text-sm mb-6 bg-black/50 p-4 rounded border border-white/5">
+        {result.details || "Unknown Error Occurred"}
+      </p>
+      <button 
+        onClick={onReset} 
+        className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-full text-xs uppercase font-bold tracking-wider transition-colors shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+      >
+        Try Again
+      </button>
+    </div>
+  );
+
+  // 2. LOADING STATE DETECTION
+  // If 'scores' is missing, it means we are in Phase 1 (Fast Scan) and Phase 2 (Deep Scan) is still running.
+  const isDeepLoading = !result.scores; 
 
   return (
     <div className="w-full max-w-6xl mx-auto pb-32 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -58,9 +79,10 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
 
       {/* --- SECTION 1: THE SCORECARD --- */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-        {/* BIG SCORE */}
-        <div className="lg:col-span-5 bg-[#0A0A0A] border border-white/5 rounded-3xl p-10 flex flex-col items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent"></div>
+        
+        {/* BIG SCORE RING */}
+        <div className="lg:col-span-5 bg-[#0A0A0A] border border-white/5 rounded-3xl p-10 flex flex-col items-center justify-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
           
           <div className="relative w-48 h-48 flex items-center justify-center border-4 border-white/5 rounded-full mb-8">
             {isDeepLoading ? (
@@ -77,12 +99,14 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
             {result.verdict?.status || "CALCULATING..."}
           </div>
           <p className="text-center text-gray-500 text-sm leading-relaxed max-w-sm">
-            {result.verdict?.summary || "Our AI is currently stress-testing your content against industry leaders..."}
+            {result.verdict?.summary || "Our AI is currently stress-testing your content against industry leaders to determine your true visibility."}
           </p>
         </div>
 
-        {/* DETAILED BREAKDOWN (Shows Loading Bars if Deep Scan is running) */}
+        {/* DETAILED BREAKDOWN */}
         <div className="lg:col-span-7 grid grid-cols-1 gap-6">
+          
+          {/* PILLARS */}
           <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Performance Pillars
@@ -92,6 +116,7 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
             <ScoreBar label="Technical AEO Schema" score={result.scores?.technical} />
           </div>
 
+          {/* MARKET REALITY (Competitors) */}
           <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
               <span className="w-2 h-2 bg-purple-500 rounded-full"></span> Market Reality
@@ -103,17 +128,18 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
                   <span className="text-gray-500 font-mono text-xs">Est. Share: {comp.traffic_share}%</span>
                 </div>
               ))}
+              {!result.competitors && <div className="text-gray-500 text-xs italic">Identifying competitors...</div>}
             </div>
           </div>
         </div>
       </div>
 
       {/* --- SECTION 2: MISSED OPPORTUNITIES --- */}
-      {!isDeepLoading && (
+      {!isDeepLoading && result.missed_opportunities && (
         <div className="mb-12 animate-in fade-in slide-in-from-bottom-12 duration-700">
           <h3 className="text-xl font-bold text-white mb-6 font-space">Answer Engine Triggers</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {result.missed_opportunities?.map((opp: any, i: number) => (
+            {result.missed_opportunities.map((opp: any, i: number) => (
               <div key={i} className="p-6 rounded-2xl bg-[#0F0F0F] border border-red-500/20 hover:border-red-500/40 transition-colors">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-red-500 text-xl">?</span>
@@ -127,11 +153,11 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
       )}
 
       {/* --- SECTION 3: ROADMAP --- */}
-      {!isDeepLoading && (
+      {!isDeepLoading && result.roadmap && (
         <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
           <h3 className="text-xl font-bold text-white mb-6 font-space">Strategic Recovery Plan</h3>
           <div className="space-y-4">
-            {result.roadmap?.map((step: any, i: number) => (
+            {result.roadmap.map((step: any, i: number) => (
               <div key={i} className="flex flex-col md:flex-row gap-6 p-6 rounded-2xl bg-[#0A0A0A] border border-white/10 hover:border-green-500/30 transition-all">
                 <div className="min-w-[120px]">
                   <div className={`inline-block px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest mb-2 ${step.difficulty === 'Hard' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
