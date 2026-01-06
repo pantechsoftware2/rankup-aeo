@@ -50,9 +50,13 @@ export default function Home() {
       setResult((prev: any) => ({ ...prev, ...deepData }));
       setLoadingStep(0); // Done
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setResult({ error: true, details: "Connection failed. Please try again." });
+      // SHOW THE REAL ERROR ON SCREEN
+      setResult({ 
+        error: true, 
+        details: error.message || "Unknown error occurred" 
+      });
       setLoadingStep(0);
     }
   };
