@@ -1,81 +1,57 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-export const maxDuration = 10;
+export const maxDuration = 60; // 60 Seconds allowed
 
 export async function POST(req: Request) {
   try {
     const { raw_text, industry, niche } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: true });
+    
+    // UNLEASHED: Send the full 25k characters to the AI
+    const cleanText = (raw_text || "").substring(0, 25000);
 
-    // OPTIMIZATION: Max 2000 chars for Deep Scan.
-    const cleanText = (raw_text || "").substring(0, 2000);
-
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey!);
+    // Using Flash for now to ensure reliability, but we give it permission to think long.
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
 
     const prompt = `
-      Context: Industry=${industry}, Niche=${niche}.
-      Content Snippet: ${cleanText}...
+      Deep Audit for AEO (Answer Engine Optimization).
+      Industry: ${industry} | Niche: ${niche}
+      Content Context: ${cleanText}...
 
-      Task: Critique this content for Answer Engine Optimization (AEO).
-      TONE: Brutally honest. Specific.
+      ROLE: You are a Senior SEO Strategist.
       
-      1. Score (0-100). If generic/thin content, score < 40.
-      2. 3 SPECIFIC questions users ask that this content MISSES.
-      3. 3-step Roadmap. Be technical.
+      TASK:
+      1. Score this content (0-100) on "Information Gain" (Does it add new value?).
+      2. Identify 3 SPECIFIC questions that users in this niche ask, which this site FAILS to answer.
+      3. Create a high-impact roadmap. Use technical terms (Schema, Entities, NLP).
 
-      RETURN JSON ONLY (No Markdown):
+      RETURN JSON ONLY:
       {
         "scores": { "overall": Number, "content": Number, "authority": Number, "technical": Number },
-        "verdict": { "status": "Invisible" | "Visible" | "Dominant", "summary": "String" },
+        "verdict": { "status": "Invisible" | "Emerging" | "Visible" | "Dominant", "summary": "String" },
         "missed_opportunities": [
-          { "question": "Specific user question?", "volume": "High" },
-          { "question": "Specific user question?", "volume": "High" },
-          { "question": "Specific user question?", "volume": "Med" }
+          { "question": "Specific Question?", "volume": "High" | "Med" },
+          { "question": "Specific Question?", "volume": "High" | "Med" },
+          { "question": "Specific Question?", "volume": "High" | "Med" }
         ],
         "roadmap": [
-          { "title": "Specific Action", "difficulty": "Easy", "impact": "High", "desc": "Short detail" },
-          { "title": "Specific Action", "difficulty": "Med", "impact": "High", "desc": "Short detail" },
-          { "title": "Specific Action", "difficulty": "Hard", "impact": "High", "desc": "Short detail" }
+          { "title": "Strategy Title", "difficulty": "Easy" | "Med" | "Hard", "impact": "High", "desc": "Specific instruction." },
+          { "title": "Strategy Title", "difficulty": "Easy" | "Med" | "Hard", "impact": "High", "desc": "Specific instruction." },
+          { "title": "Strategy Title", "difficulty": "Easy" | "Med" | "Hard", "impact": "High", "desc": "Specific instruction." }
         ]
       }
     `;
 
-    const aiPromise = model.generateContent(prompt);
-    // EXTENDED TIMER: 8.5 Seconds
-    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve("TIMEOUT"), 8500));
+    // No Timeouts. Real Analysis.
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().replace(/```json|```/g, '').trim();
 
-    const raceResult: any = await Promise.race([aiPromise, timeoutPromise]);
-
-    if (raceResult === "TIMEOUT") {
-      // Fallback only if we absolutely have to
-      return NextResponse.json({
-        scores: { overall: 55, content: 50, authority: 40, technical: 60 },
-        verdict: { status: "Emerging", summary: "Server timed out, but initial indicators show average visibility." },
-        missed_opportunities: [
-           { question: `What is the pricing model for ${niche}?`, volume: "High" },
-           { question: "How does this compare to top competitors?", volume: "High" },
-           { question: "Is there a free trial available?", volume: "Med" }
-        ],
-        roadmap: [
-           { title: "Create Comparison Pages", difficulty: "Easy", impact: "High", desc: "Capture high-intent traffic." },
-           { title: "Add FAQ Schema", difficulty: "Med", impact: "High", desc: "Win rich snippets." },
-           { title: "Publish Data Study", difficulty: "Hard", impact: "High", desc: "Earn backlinks." }
-        ]
-      });
-    }
-
-    const text = raceResult.response.text().replace(/```json|```/g, '').trim();
     return NextResponse.json(JSON.parse(text));
 
   } catch (error: any) {
-    return NextResponse.json({ 
-       scores: { overall: 50, content: 50, authority: 50, technical: 50 },
-       verdict: { status: "Unknown", summary: "Analysis unavailable." },
-       missed_opportunities: [],
-       roadmap: []
-    });
+    console.error("Deep Scan Error:", error);
+    return NextResponse.json({ error: true, details: error.message });
   }
 }
