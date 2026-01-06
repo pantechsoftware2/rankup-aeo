@@ -8,32 +8,35 @@ const STEPS = [
   "Extracting Semantic Entities...",      // 2000ms
   "Evaluating E-E-A-T Signals...",        // 3500ms
   "Cross-Referencing Knowledge Graphs...",// 5500ms
-  "Synthesizing Strategic Verdict..."     // 8000ms
+  "Synthesizing Strategic Verdict..."     // 7500ms
 ];
 
 export default function LoadingHud() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    // TIMELINE: Adjusted to be slightly snappier (Total ~9s)
+    // REFINED TIMELINE: No "hanging" at the end.
     const timeline = [
       800,   // Step 0 -> 1 (Fast start)
-      1200,  // Step 1 -> 2 (Scanning)
-      1500,  // Step 2 -> 3 (Thinking)
+      1200,  // Step 1 -> 2
+      1500,  // Step 2 -> 3
       2000,  // Step 3 -> 4 (Deep Thinking)
-      2500,  // Step 4 -> 5 (Final Calc)
-      999999 // Step 5 stays until API finishes
+      2500,  // Step 4 -> 5 (Calculations)
+      1500   // Step 5 -> Finish (Wait only 1.5s here)
     ];
 
     let stepIndex = 0;
 
     const runStep = () => {
-      if (stepIndex >= timeline.length - 1) return;
+      if (stepIndex >= timeline.length) return;
       
       setTimeout(() => {
         stepIndex++;
-        setCurrentStep(stepIndex);
-        runStep();
+        // Safety check to prevent index out of bounds
+        if (stepIndex < STEPS.length) {
+            setCurrentStep(stepIndex);
+            runStep();
+        }
       }, timeline[stepIndex]);
     };
 

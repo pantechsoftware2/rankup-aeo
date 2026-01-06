@@ -32,17 +32,25 @@ const LoadingBar = () => (
   </div>
 );
 
+// ALIGNMENT FIX: Separated Label/Score row from SubLabel
 const ScoreBar = ({ label, score, subLabel }: { label: string, score: number | undefined, subLabel?: string }) => (
   <div className="mb-5">
-    <div className="flex justify-between items-end mb-2">
-      <div className="flex flex-col">
-        <span className="text-xs text-gray-300 font-bold font-space">{label}</span>
-        {subLabel && <span className="text-[10px] text-gray-500 mt-0.5">{subLabel}</span>}
-      </div>
+    {/* Row 1: Label + Score (Always Aligned) */}
+    <div className="flex justify-between items-center mb-1">
+      <span className="text-xs text-gray-300 font-bold font-space">{label}</span>
       <span className="text-xs text-gray-400 font-mono">{score !== undefined ? `${score}/100` : '...'}</span>
     </div>
+    
+    {/* Row 2: SubLabel (Optional) */}
+    {subLabel && (
+      <div className="text-[10px] text-gray-500 mb-2 leading-tight max-w-[90%]">
+        {subLabel}
+      </div>
+    )}
+
+    {/* Bar */}
     {score !== undefined ? (
-      <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+      <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden mt-1">
         <div 
           className={`h-full transition-all duration-1000 ${score > 70 ? 'bg-green-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500'}`} 
           style={{ width: `${score}%` }}
@@ -75,7 +83,7 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
   const industry = cleanText(result.meta?.industry);
   const niche = cleanText(result.meta?.niche);
 
-  // Determine Badge Colors based on the "Cleaned" text
+  // Determine Badge Colors
   const industryColor = industry === "UNDEFINED" ? "red" : "blue";
   const nicheColor = niche === "UNDEFINED" ? "red" : "gray";
 
