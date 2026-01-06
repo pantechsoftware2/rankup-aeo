@@ -1,45 +1,66 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-export const maxDuration = 60; // 60 Seconds allowed
+export const maxDuration = 60; 
+
+async function getBestModel(apiKey: string) {
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const data = await response.json();
+    const models = data.models || [];
+
+    const priority = [
+      'gemini-1.5-pro-latest',
+      'gemini-1.5-pro-001', 
+      'gemini-1.5-pro',
+      'gemini-1.0-pro',
+      'gemini-pro'
+    ];
+    
+    for (const p of priority) {
+      const found = models.find((m: any) => m.name.includes(p));
+      if (found) return found.name.replace('models/', '');
+    }
+    return 'gemini-pro';
+  } catch (e) {
+    return "gemini-pro";
+  }
+}
 
 export async function POST(req: Request) {
   try {
     const { raw_text, industry, niche } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
     
-    // UNLEASHED: Send 30k characters to the smartest model.
     const cleanText = (raw_text || "").substring(0, 30000);
 
+    // SMART SELECTOR
+    const modelName = await getBestModel(apiKey!);
     const genAI = new GoogleGenerativeAI(apiKey!);
-    // Using PRO model for deep reasoning.
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); 
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     const prompt = `
-      Deep Audit for AEO (Answer Engine Optimization).
-      Industry: ${industry} | Niche: ${niche}
-      Content Context: ${cleanText}...
+      Deep Audit. Industry: ${industry}, Niche: ${niche}
+      Context: ${cleanText}...
 
-      ROLE: You are a Senior SEO Strategist.
-      
-      TASK:
-      1. Score this content (0-100) on "Information Gain" (Does it add new value?).
-      2. Identify 3 SPECIFIC questions that users in this niche ask, which this site FAILS to answer.
-      3. Create a high-impact roadmap. Use technical terms (Schema, Entities, NLP).
+      Task:
+      1. Score (0-100).
+      2. 3 Missing Questions.
+      3. 3-step Roadmap.
 
       RETURN JSON ONLY:
       {
         "scores": { "overall": Number, "content": Number, "authority": Number, "technical": Number },
-        "verdict": { "status": "Invisible" | "Emerging" | "Visible" | "Dominant", "summary": "String" },
+        "verdict": { "status": "Visible", "summary": "String" },
         "missed_opportunities": [
-          { "question": "Specific Question?", "volume": "High" | "Med" },
-          { "question": "Specific Question?", "volume": "High" | "Med" },
-          { "question": "Specific Question?", "volume": "High" | "Med" }
+          { "question": "Q1?", "volume": "High" },
+          { "question": "Q2?", "volume": "High" },
+          { "question": "Q3?", "volume": "Med" }
         ],
         "roadmap": [
-          { "title": "Strategy Title", "difficulty": "Easy" | "Med" | "Hard", "impact": "High", "desc": "Specific instruction." },
-          { "title": "Strategy Title", "difficulty": "Easy" | "Med" | "Hard", "impact": "High", "desc": "Specific instruction." },
-          { "title": "Strategy Title", "difficulty": "Easy" | "Med" | "Hard", "impact": "High", "desc": "Specific instruction." }
+          { "title": "Step 1", "difficulty": "Easy", "impact": "High", "desc": "Desc" },
+          { "title": "Step 2", "difficulty": "Med", "impact": "High", "desc": "Desc" },
+          { "title": "Step 3", "difficulty": "Hard", "impact": "High", "desc": "Desc" }
         ]
       }
     `;
