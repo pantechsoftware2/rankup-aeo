@@ -3,16 +3,35 @@ import { NextResponse } from "next/server";
 
 export const maxDuration = 10;
 
+// HELPER: Find a valid model so we never get 404s
+async function getValidModel(apiKey: string) {
+  try {
+    const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const listData = await listResp.json();
+    
+    const models = listData.models || [];
+    const bestModel = models.find((m: any) => m.name.includes('flash')) 
+                   || models.find((m: any) => m.name.includes('pro'))
+                   || models.find((m: any) => m.name.includes('gemini'));
+                   
+    return bestModel ? bestModel.name.replace('models/', '') : "gemini-pro";
+  } catch (e) {
+    return "gemini-pro"; 
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    // We receive the text directly from the client (passed from Fast Scan)
     const { raw_text, industry, niche } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: true, details: "API Key Missing" });
 
-    const genAI = new GoogleGenerativeAI(apiKey!);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // 1. Get Valid Model (The Fix)
+    const modelName = await getValidModel(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
 
-    // DEEP PROMPT: Strategy & Scores
+    // 2. Deep Prompt
     const prompt = `
       Deep Audit. Context: Industry=${industry}, Niche=${niche}.
       Site Content: ${raw_text?.substring(0, 10000)}...
@@ -44,7 +63,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(JSON.parse(text));
 
-  } catch (error) {
-    return NextResponse.json({ error: true });
+  } catch (error: any) {
+    console.error("Deep Scan Error:", error);
+    return NextResponse.json({ error: true, details: error.message || "Deep Scan Failed" });
   }
 }

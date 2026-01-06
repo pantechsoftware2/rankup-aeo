@@ -6,7 +6,7 @@ export const maxDuration = 10;
 async function fetchWebsiteContent(url: string) {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000); // 2s Hard Limit
+    const timeout = setTimeout(() => controller.abort(), 2000); 
     const response = await fetch(url, { 
       signal: controller.signal,
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankUpBot/1.0)' }
@@ -14,10 +14,27 @@ async function fetchWebsiteContent(url: string) {
     clearTimeout(timeout);
     if (!response.ok) return null;
     const html = await response.text();
-    // Return Cleaned Text (Limit 5000 chars for speed)
     return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 5000);
   } catch (error) {
     return null;
+  }
+}
+
+// HELPER: Find a valid model so we never get 404s
+async function getValidModel(apiKey: string) {
+  try {
+    const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const listData = await listResp.json();
+    
+    // Try to find Flash first (fastest), then Pro (smartest), then any Gemini
+    const models = listData.models || [];
+    const bestModel = models.find((m: any) => m.name.includes('flash')) 
+                   || models.find((m: any) => m.name.includes('pro'))
+                   || models.find((m: any) => m.name.includes('gemini'));
+                   
+    return bestModel ? bestModel.name.replace('models/', '') : "gemini-pro";
+  } catch (e) {
+    return "gemini-pro"; // Ultimate fallback
   }
 }
 
@@ -25,18 +42,20 @@ export async function POST(req: Request) {
   try {
     const { website } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: "Config Error" }, { status: 500 });
+    if (!apiKey) return NextResponse.json({ error: true, details: "API Key missing" });
 
+    // 1. Get Content
     const liveContent = await fetchWebsiteContent(website);
     const contextInput = liveContent || `URL: ${website}`;
 
+    // 2. Get Valid Model (The Fix)
+    const modelName = await getValidModel(apiKey);
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: modelName });
 
-    // FAST PROMPT: Only Identity + Competitors
+    // 3. Fast Prompt
     const prompt = `
       Fast Audit for: ${contextInput}
-      
       Task: Identify the Industry, Niche, and 3 Real Competitors.
       Return JSON ONLY:
       {
@@ -52,18 +71,11 @@ export async function POST(req: Request) {
 
     const result = await model.generateContent(prompt);
     const text = result.response.text().replace(/```json|```/g, '').trim();
-    const data = JSON.parse(text);
+    
+    return NextResponse.json({ ...JSON.parse(text), raw_text: liveContent });
 
-    // CRITICAL: We pass the scraped text back to the client so the Deep Scan 
-    // doesn't have to scrape it again (saving 3s).
-    return NextResponse.json({ ...data, raw_text: liveContent });
-
-} catch (error: any) {
+  } catch (error: any) {
     console.error("Fast Scan Error:", error);
-    // DEBUG UPDATE: Return the actual error message
-    return NextResponse.json({ 
-      error: true, 
-      details: error.message || "Fast Scan Internal Server Error" 
-    });
+    return NextResponse.json({ error: true, details: error.message || "Fast Scan Failed" });
   }
 }
