@@ -1,8 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { 
-  BarChart3, 
   BrainCircuit, 
   CheckCircle2, 
   Code2, 
@@ -12,13 +11,18 @@ import {
   XCircle 
 } from 'lucide-react';
 
-// --- ANIMATION CONFIGURATIONS ---
-const fadeInUp = {
+// --- ANIMATION CONFIGURATIONS (Now with Types!) ---
+
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.8, ease: "easeOut" } 
+  }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -26,9 +30,13 @@ const staggerContainer = {
   }
 };
 
-const graphLine = {
+const graphLine: Variants = {
   hidden: { pathLength: 0, opacity: 0 },
-  visible: { pathLength: 1, opacity: 1, transition: { duration: 2, ease: "easeInOut" } }
+  visible: { 
+    pathLength: 1, 
+    opacity: 1, 
+    transition: { duration: 2, ease: "easeInOut" } 
+  }
 };
 
 export default function LandingContent() {
@@ -39,11 +47,10 @@ export default function LandingContent() {
       <div className="absolute top-[20%] left-0 w-[500px] h-[500px] bg-green-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* --- SECTION 1: THE WAKE UP CALL (The Zero-Click Graph) --- */}
+      {/* --- SECTION 1: THE WAKE UP CALL --- */}
       <section className="py-32 px-6 relative">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
-          {/* Left Text */}
           <motion.div 
             initial="hidden" 
             whileInView="visible" 
@@ -67,7 +74,7 @@ export default function LandingContent() {
             </motion.p>
           </motion.div>
 
-          {/* Right Graph Animation */}
+          {/* Graph Animation */}
           <motion.div 
             initial="hidden" 
             whileInView="visible" 
@@ -83,11 +90,9 @@ export default function LandingContent() {
             </div>
 
             <div className="h-64 relative w-full">
-              {/* Grid Lines */}
               <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 border-l border-b border-white/5" />
               
               <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
-                {/* Green Line (AI Usage Going Up) */}
                 <motion.path 
                   d="M0,200 C50,180 150,150 300,50 400,20 500,0" 
                   fill="none" 
@@ -95,7 +100,6 @@ export default function LandingContent() {
                   strokeWidth="3" 
                   variants={graphLine}
                 />
-                {/* Gray Line (Web Clicks Going Down) */}
                 <motion.path 
                   d="M0,180 C50,170 150,200 300,220 400,240 500,250" 
                   fill="none" 
@@ -106,7 +110,6 @@ export default function LandingContent() {
                 />
               </svg>
 
-              {/* Zero-Click Annotation Label */}
               <motion.div 
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -120,7 +123,7 @@ export default function LandingContent() {
         </div>
       </section>
 
-      {/* --- SECTION 2: THE MECHANISM (Engineering, not Rigging) --- */}
+      {/* --- SECTION 2: THE MECHANISM --- */}
       <section className="py-32 px-6 bg-white/[0.02] border-y border-white/5">
         <div className="max-w-6xl mx-auto">
           <motion.div 
@@ -137,7 +140,6 @@ export default function LandingContent() {
             </motion.p>
           </motion.div>
 
-          {/* 3 Step Process Cards */}
           <motion.div 
             initial="hidden" 
             whileInView="visible" 
@@ -148,7 +150,7 @@ export default function LandingContent() {
             <ProcessCard 
               icon={<Code2 className="w-8 h-8 text-blue-400" />}
               title="Structural Clarity"
-              desc="We inject JSON-LD Schema that explicitly tells the AI: 'This is a Product. It costs $50. It is 5-star rated.' We turn your site into a database."
+              desc="We inject JSON-LD Schema that explicitly tells the AI: 'This is a Product. It costs $50. It is 5-star rated.'"
               step="01" 
               color="blue"
             />
@@ -170,7 +172,7 @@ export default function LandingContent() {
         </div>
       </section>
 
-      {/* --- SECTION 3: SEO vs AEO COMPARISON --- */}
+      {/* --- SECTION 3: SEO vs AEO --- */}
       <section className="py-32 px-6 relative">
         <div className="max-w-5xl mx-auto">
           <motion.div 
@@ -184,19 +186,16 @@ export default function LandingContent() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8 relative">
-            {/* VS Badge */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#050505] border border-white/10 p-2 rounded-full hidden md:block">
               <span className="text-xs font-bold text-white px-2">VS</span>
             </div>
 
-            {/* Old World Card */}
             <motion.div 
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 relative overflow-hidden group"
+              className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gray-800" />
               <div className="flex items-center gap-3 mb-8">
                 <Search className="text-gray-500 w-6 h-6" />
                 <h3 className="text-xl font-bold text-gray-400">Traditional SEO</h3>
@@ -209,14 +208,12 @@ export default function LandingContent() {
               </ul>
             </motion.div>
 
-            {/* New World Card */}
             <motion.div 
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="p-8 rounded-3xl bg-green-900/10 border border-green-500/20 relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e]" />
               <div className="flex items-center gap-3 mb-8">
                 <Share2 className="text-green-400 w-6 h-6" />
                 <h3 className="text-xl font-bold text-white">RankUp AEO</h3>
@@ -256,10 +253,9 @@ export default function LandingContent() {
   );
 }
 
-// --- SUBCOMPONENTS (Internal) ---
+// --- SUBCOMPONENTS ---
 
 function ProcessCard({ icon, title, desc, step, color }: any) {
-  // Color mapping to handle dynamic Tailwind classes safely
   const colors: any = {
     blue: "bg-blue-500/10 text-blue-500/20 group-hover:bg-blue-500/20",
     purple: "bg-purple-500/10 text-purple-500/20 group-hover:bg-purple-500/20",
