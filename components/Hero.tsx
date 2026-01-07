@@ -2,15 +2,29 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }) {
   const [url, setUrl] = useState('');
+  const [touched, setTouched] = useState(false);
+
+  // Regex: matches "text" + "." + "2+ letters" (e.g. .com, .ai, .co)
+  const isValidDomain = (input: string) => {
+    // Strip http/https/www for the check if needed, but simple regex works for user input
+    // This allows "google.com" or "https://google.com" but fails "google"
+    return /\.[a-z]{2,}$/i.test(input);
+  };
+
+  const isInvalid = url.length > 0 && !isValidDomain(url);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (url) onAnalyze(url);
+    if (isValidDomain(url)) {
+      onAnalyze(url);
+    } else {
+      setTouched(true); // Show error if they try to force submit via Enter key
+    }
   };
 
   return (
@@ -18,7 +32,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
       
       {/* --- NAVIGATION BAR --- */}
       <nav className="absolute top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center max-w-7xl mx-auto">
-        {/* LOGO SECTION - Image Only */}
+        {/* LOGO SECTION */}
         <div className="relative w-40 h-12 transition-transform hover:scale-105 cursor-pointer">
           <Image 
             src="/logo.png" 
@@ -70,7 +84,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           <span className="text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800">Age of Answers.</span>
         </motion.h1>
 
-        {/* Subhead (UPDATED) */}
+        {/* Subhead */}
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,33 +94,56 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           Reach millions of consumers who are using AI to discover new brands. Get your business recommended by ChatGPT, Gemini, and Perplexity.
         </motion.p>
 
-        {/* Input Box */}
-        <motion.form 
+        {/* Input Box Area */}
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          onSubmit={handleSubmit}
-          className="relative max-w-lg mx-auto group"
+          transition={{ delay: 0.5 }} 
+          className="max-w-lg mx-auto"
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-          
-          <div className="relative flex items-center bg-[#0A0A0A] border border-white/10 rounded-xl p-2 shadow-2xl">
-            <input 
-              type="text" 
-              placeholder="e.g. stayiq.ai" 
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none text-white px-4 py-3 placeholder:text-gray-600 font-mono text-sm focus:ring-0"
-            />
-            <button 
-              type="submit"
-              disabled={!url}
-              className="bg-white text-black px-6 py-3 rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ANALYZE
-            </button>
+          <form onSubmit={handleSubmit} className="relative group mb-3">
+            <div className={`absolute -inset-1 bg-gradient-to-r ${isInvalid ? 'from-red-500/50 to-red-900/50' : 'from-green-500 to-emerald-600'} rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000`}></div>
+            
+            <div className={`relative flex items-center bg-[#0A0A0A] border ${isInvalid && touched ? 'border-red-500/50' : 'border-white/10'} rounded-xl p-2 shadow-2xl transition-colors`}>
+              <input 
+                type="text" 
+                placeholder="e.g. stayiq.ai" 
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  if (touched) setTouched(false);
+                }}
+                className="flex-1 bg-transparent border-none outline-none text-white px-4 py-3 placeholder:text-gray-600 font-mono text-sm focus:ring-0"
+              />
+              <button 
+                type="submit"
+                disabled={!isValidDomain(url)}
+                className="bg-white text-black px-6 py-3 rounded-lg font-bold text-xs md:text-sm hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                RUN FREE AUDIT
+              </button>
+            </div>
+          </form>
+
+          {/* Validation & Trust Micro-Copy */}
+          <div className="h-6 flex items-center justify-center gap-2 text-[10px] md:text-xs font-mono">
+            {isInvalid && url.length > 0 ? (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                className="text-red-400 flex items-center gap-2"
+              >
+                <AlertCircle className="w-3 h-3" />
+                Please enter a valid domain (e.g., .com, .ai)
+              </motion.div>
+            ) : (
+              <div className="text-gray-500 flex items-center gap-2">
+                <CheckCircle2 className="w-3 h-3 text-green-500" />
+                <span>Get your free AEO report today. No credit card required.</span>
+              </div>
+            )}
           </div>
-        </motion.form>
+        </motion.div>
 
         {/* Footer Trust Signals */}
         <motion.div 
