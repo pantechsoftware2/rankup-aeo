@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Sparkles, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }) {
   const [url, setUrl] = useState('');
@@ -12,13 +14,39 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
   };
 
   return (
-    <div className="relative w-full min-h-[85vh] flex flex-col items-center justify-center overflow-hidden bg-[#050505]">
+    <div className="relative w-full min-h-[90vh] flex flex-col items-center justify-center overflow-hidden bg-[#050505]">
       
-      {/* Background Gradients */}
+      {/* --- NAVIGATION BAR --- */}
+      <nav className="absolute top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center max-w-7xl mx-auto">
+        {/* LOGO SECTION - Image Only */}
+        <div className="relative w-40 h-12 transition-transform hover:scale-105 cursor-pointer">
+          <Image 
+            src="/logo.png" 
+            alt="RankUp Logo" 
+            fill
+            className="object-contain object-left"
+            priority
+          />
+        </div>
+
+        {/* RIGHT ACTIONS */}
+        <div className="flex items-center gap-6">
+          <button className="hidden md:block text-sm font-medium text-gray-400 hover:text-white transition-colors">
+            Log In
+          </button>
+          <button className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all hover:scale-105 flex items-center gap-2 group">
+            Book Demo
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </nav>
+
+      {/* --- BACKGROUND EFFECTS --- */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-900/10 via-black to-black pointer-events-none"></div>
       <div className="absolute top-0 w-full h-[1px] bg-gradient-to-r from-transparent via-green-500/20 to-transparent"></div>
 
-      <div className="relative z-10 max-w-4xl px-6 text-center">
+      {/* --- HERO CONTENT --- */}
+      <div className="relative z-10 max-w-4xl px-6 text-center mt-20">
         
         {/* Animated Badge */}
         <motion.div 
@@ -27,7 +55,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           transition={{ delay: 0.2 }}
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-widest text-green-400 mb-8"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+          <Sparkles className="w-3 h-3" />
           AEO Intelligence Engine v2.0
         </motion.div>
 
@@ -42,14 +70,14 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           <span className="text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800">Age of Answers.</span>
         </motion.h1>
 
-        {/* Subhead */}
+        {/* Subhead (UPDATED) */}
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
         >
-          Traditional SEO is invisible to AI. We help you rank in ChatGPT, Gemini, and Perplexity by decoding their "Answer Engine" algorithms.
+          Reach millions of consumers who are using AI to discover new brands. Get your business recommended by ChatGPT, Gemini, and Perplexity.
         </motion.p>
 
         {/* Input Box */}

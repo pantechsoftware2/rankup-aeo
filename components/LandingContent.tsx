@@ -7,11 +7,11 @@ import {
   Code2, 
   Database, 
   Search, 
-  Share2, 
-  XCircle 
+  Sparkles, 
+  Zap 
 } from 'lucide-react';
 
-// --- ANIMATION CONFIGURATIONS (Now with Types!) ---
+// --- ANIMATION CONFIGURATIONS ---
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -172,7 +172,7 @@ export default function LandingContent() {
         </div>
       </section>
 
-      {/* --- SECTION 3: SEO vs AEO --- */}
+      {/* --- SECTION 3: EVOLUTION (SEO + AEO) --- */}
       <section className="py-32 px-6 relative">
         <div className="max-w-5xl mx-auto">
           <motion.div 
@@ -181,15 +181,20 @@ export default function LandingContent() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl font-bold text-white mb-4 font-space">The New Rules of Ranking</h2>
-            <p className="text-gray-400">The game has changed. Here is the difference.</p>
+            <h2 className="text-3xl font-bold text-white mb-4 font-space">SEO is the Foundation. AEO is the Future.</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              You don't need to abandon your SEO strategy. You need to supercharge it. 
+              Our <strong>Plug-and-Play AI Agents</strong> make your website AI-ready in minutes.
+            </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8 relative">
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#050505] border border-white/10 p-2 rounded-full hidden md:block">
-              <span className="text-xs font-bold text-white px-2">VS</span>
+            {/* "PLUS" Badge (Instead of VS) */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#050505] border border-white/10 p-3 rounded-full hidden md:block shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <span className="text-sm font-bold text-white px-1">+</span>
             </div>
 
+            {/* Old World (Framed as Essential Foundation) */}
             <motion.div 
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -198,31 +203,35 @@ export default function LandingContent() {
             >
               <div className="flex items-center gap-3 mb-8">
                 <Search className="text-gray-500 w-6 h-6" />
-                <h3 className="text-xl font-bold text-gray-400">Traditional SEO</h3>
+                <h3 className="text-xl font-bold text-gray-300">Traditional SEO</h3>
               </div>
+              <p className="text-sm text-gray-500 mb-6 font-mono uppercase tracking-widest">The Essential Foundation</p>
               <ul className="space-y-6">
-                <ComparisonItem bad text="Target: Google's Algorithm" />
-                <ComparisonItem bad text="Goal: Rank #1 in a list of 10" />
-                <ComparisonItem bad text="Content: 2,000 word blog posts" />
-                <ComparisonItem bad text="Outcome: User might click" />
+                <ComparisonItem neutral text="Target: Google Search" />
+                <ComparisonItem neutral text="Goal: Rank #1 in 10 Blue Links" />
+                <ComparisonItem neutral text="Content: Keywords & Blogs" />
+                <ComparisonItem neutral text="Speed: Months to Rank" />
               </ul>
             </motion.div>
 
+            {/* New World (Framed as The Upgrade) */}
             <motion.div 
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="p-8 rounded-3xl bg-green-900/10 border border-green-500/20 relative overflow-hidden"
             >
+              <div className="absolute top-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e]" />
               <div className="flex items-center gap-3 mb-8">
-                <Share2 className="text-green-400 w-6 h-6" />
-                <h3 className="text-xl font-bold text-white">RankUp AEO</h3>
+                <Sparkles className="text-green-400 w-6 h-6" />
+                <h3 className="text-xl font-bold text-white">RankUp AI Agents</h3>
               </div>
+              <p className="text-sm text-green-500/70 mb-6 font-mono uppercase tracking-widest">The Force Multiplier</p>
               <ul className="space-y-6">
                 <ComparisonItem text="Target: LLM Neural Networks" />
                 <ComparisonItem text="Goal: Be the ONLY answer cited" />
-                <ComparisonItem text="Content: Precise, Data-Rich Snippets" />
-                <ComparisonItem text="Outcome: Direct AI Recommendation" />
+                <ComparisonItem text="Content: Entities & Vectors" />
+                <ComparisonItem text="Speed: Optimized in Minutes" />
               </ul>
             </motion.div>
           </div>
@@ -243,9 +252,10 @@ export default function LandingContent() {
           </p>
           <button 
              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-             className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+             className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)] flex items-center gap-2 mx-auto"
           >
-            Start Your Free Audit
+            <Zap className="w-5 h-5 fill-black" />
+            Start Free Audit
           </button>
         </motion.div>
       </section>
@@ -279,15 +289,15 @@ function ProcessCard({ icon, title, desc, step, color }: any) {
   );
 }
 
-function ComparisonItem({ text, bad = false }: { text: string, bad?: boolean }) {
+function ComparisonItem({ text, neutral = false }: { text: string, neutral?: boolean }) {
   return (
     <li className="flex items-center gap-3 text-sm md:text-base">
-      {bad ? (
-        <XCircle className="w-5 h-5 text-gray-600 shrink-0" />
+      {neutral ? (
+        <CheckCircle2 className="w-5 h-5 text-gray-600 shrink-0" />
       ) : (
         <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
       )}
-      <span className={bad ? "text-gray-500 line-through" : "text-gray-200"}>{text}</span>
+      <span className={neutral ? "text-gray-400" : "text-white"}>{text}</span>
     </li>
   );
 }
