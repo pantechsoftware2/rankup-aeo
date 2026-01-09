@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 // --- UI HELPERS ---
 
 const Badge = ({ children, color = 'gray' }: { children: React.ReactNode, color?: string }) => {
@@ -60,9 +62,75 @@ const ScoreBar = ({ label, score, subLabel }: { label: string, score: number | u
   </div>
 );
 
+// --- EMAIL GATE OVERLAY ---
+const EmailGate = ({ onSubmit, email, setEmail, isSubmitting }: any) => (
+  <div className="absolute inset-0 backdrop-blur-md bg-black/60 rounded-3xl flex items-center justify-center z-10 animate-in fade-in zoom-in duration-500">
+    <div className="bg-[#0A0A0A] border border-green-500/30 rounded-2xl p-8 max-w-md mx-4 shadow-[0_0_40px_rgba(34,197,94,0.15)]">
+      <div className="text-center mb-6">
+        <div className="inline-block p-3 bg-green-500/10 rounded-full mb-4">
+          <span className="text-3xl">🔓</span>
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2 font-space">Unlock Full AEO Report</h3>
+        <p className="text-sm text-gray-400">Enter your work email to access competitors analysis and strategic roadmap</p>
+      </div>
+      
+      <form onSubmit={onSubmit} className="space-y-4">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@company.com"
+          required
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 transition-colors text-sm"
+        />
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-xl text-sm font-bold uppercase tracking-wider transition-all shadow-[0_0_30px_rgba(34,197,94,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Unlocking...' : 'Get Full Report'}
+        </button>
+      </form>
+      
+      <p className="text-[10px] text-gray-500 text-center mt-4">
+        We respect your privacy. No spam, ever.
+      </p>
+    </div>
+  </div>
+);
+
 // --- MAIN DASHBOARD COMPONENT ---
 
 export default function ResultDashboard({ result, onReset }: { result: any, onReset: () => void }) {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      if (response.ok) {
+        setIsUnlocked(true);
+      } else {
+        alert('Failed to subscribe. Please try again.');
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      alert('An error occurred. Please try again.');
+    }
+    
+    setIsSubmitting(false);
+  };
   
   if (result.error) return (
     <div className="w-full max-w-lg mx-auto mt-20 p-6 bg-red-900/20 border border-red-500/50 rounded-xl text-center animate-in fade-in zoom-in duration-300">
@@ -135,16 +203,33 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span> Performance Pillars
             </h3>
             <ScoreBar 
-              label="Content Depth (E-E-A-T)" 
-              subLabel="Experience, Expertise, Authoritativeness, Trustworthiness"
+              label="Content Depth" 
+              subLabel="Your content's quality badge"
               score={result.scores?.content} 
             />
-            <ScoreBar label="Domain Authority" score={result.scores?.authority} />
-            <ScoreBar label="Technical AEO Schema" score={result.scores?.technical} />
+            <ScoreBar 
+              label="Domain Authority" 
+              subLabel="Your website reputation score"
+              score={result.scores?.authority} 
+            />
+            <ScoreBar 
+              label="Technical AEO Schema" 
+              subLabel="Your content description in AI language"
+              score={result.scores?.technical} 
+            />
           </div>
 
           {/* MARKET REALITY */}
-          <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8">
+          <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 relative">
+            {!isUnlocked && (
+              <EmailGate 
+                onSubmit={handleEmailSubmit}
+                email={email}
+                setEmail={setEmail}
+                isSubmitting={isSubmitting}
+              />
+            )}
+            
             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
               <span className="w-2 h-2 bg-purple-500 rounded-full"></span> Market Reality
             </h3>
@@ -197,7 +282,16 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
 
       {/* --- SECTION 3: ROADMAP --- */}
       {!isDeepLoading && result.roadmap && (
-        <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+        <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200 relative">
+          {!isUnlocked && (
+            <EmailGate 
+              onSubmit={handleEmailSubmit}
+              email={email}
+              setEmail={setEmail}
+              isSubmitting={isSubmitting}
+            />
+          )}
+          
           <h3 className="text-xl font-bold text-white mb-6 font-space">Strategic Recovery Plan</h3>
           <div className="space-y-4">
             {result.roadmap.map((step: any, i: number) => (

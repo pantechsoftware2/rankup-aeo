@@ -69,7 +69,12 @@ export async function POST(req: Request) {
     console.log("Using Model:", modelName); 
     
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({ 
+      model: modelName,
+      generationConfig: {
+        temperature: 0, // Deterministic output for consistent scoring
+      }
+    });
 
     const prompt = `
       Analyze this brand.

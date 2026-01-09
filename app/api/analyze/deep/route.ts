@@ -36,7 +36,12 @@ export async function POST(req: Request) {
 
     const modelName = await getBestModel(apiKey!);
     const genAI = new GoogleGenerativeAI(apiKey!);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({ 
+      model: modelName,
+      generationConfig: {
+        temperature: 0, // Deterministic output for consistent scoring
+      }
+    });
 
     const prompt = `
       Deep Audit. Industry: ${industry}, Niche: ${niche}
