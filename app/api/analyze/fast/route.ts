@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import * as cheerio from 'cheerio';
+import { fetchSmart } from "@/lib/smartScraper";
 
 export const maxDuration = 60; 
 
@@ -28,48 +30,39 @@ async function getBestModel(apiKey: string) {
   }
 }
 
-function extractMetaTags(html: string) {
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i);
-  return {
-    title: titleMatch ? titleMatch[1] : "",
-    description: descMatch ? descMatch[1] : ""
-  };
-}
-
 export async function POST(req: Request) {
   try {
-    const { website } = await req.json();
+    let { website } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!website) return NextResponse.json({ error: true, details: "Website URL required" });
+    if (!website.startsWith("http")) website = `https://${website}`;
+
     if (!apiKey) return NextResponse.json({ error: true, details: "API Key Missing" });
 
     // 1. DEEP SCRAPE
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); 
     let liveContent = "";
     let metaTags = { title: "", description: "" };
 
     try {
-      const response = await fetch(website, { 
-        signal: controller.signal,
-        headers: { 
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
-        }
-      });
-      if (response.ok) {
-        const text = await response.text();
-        metaTags = extractMetaTags(text);
-        liveContent = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 30000);
+      const html = await fetchSmart(website);
+      if (html) {
+        const $ = cheerio.load(html);
+        const title = $('title').first().text().trim() || $('meta[property="og:title"]').attr('content') || "";
+        const description = $('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content') || "";
+        metaTags = { title, description };
+        $('script, style, noscript, iframe, svg').remove();
+        liveContent = $('body').text().replace(/\s+/g, " ").trim().substring(0, 30000);
       }
-    } catch (e) { console.log("Scrape warning"); }
-    clearTimeout(timeout);
+    } catch (e) { console.log("Scrape warning", e); }
 
     // 2. DUAL BRAIN PROMPT
+    const isCSR = liveContent.length < 200;
     const contextInput = `
       URL: ${website}
       HIDDEN META TITLE: ${metaTags.title}
       HIDDEN META DESC: ${metaTags.description}
-      VISIBLE BODY TEXT: ${liveContent}
+      VISIBLE BODY TEXT: ${isCSR ? "[[Scraper Warning: Minimal content detected. Site is likely Client-Side Rendered.]]" : liveContent}
     `;
 
     const modelName = await getBestModel(apiKey);
@@ -90,9 +83,12 @@ export async function POST(req: Request) {
       TASK 2: CLARITY AUDIT (The "Tough Love" Part)
       Ignore the Meta Tags now. Look ONLY at the VISIBLE BODY TEXT.
       Does the visible text *explicitly* state what the product is? 
-      Or is it vague (e.g. "Unlock potential")?
+      Or is it vague (e.g. "Unlock potential") or missing due to the Scraper Warning?
       
       If Vague: Set 'is_clear' to false. Write a critique saying: "We identified you as [Niche] by decoding your metadata, but your homepage text is too vague for human users."
+      If Vague or Warning: Set 'is_clear' to false. 
+      If Scraper Warning present, critique: "This site appears to be Client-Side Rendered (JavaScript), so I couldn't read the visible text to audit clarity."
+      Else, critique: "We identified you as [Niche] by decoding your metadata, but your homepage text is too vague for human users."
 
       RETURN JSON ONLY:
       {
@@ -110,7 +106,12 @@ export async function POST(req: Request) {
     `;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, '').trim();
+    let text = result.response.text().replace(/```json|```/g, '').trim();
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      text = text.substring(firstBrace, lastBrace + 1);
+    }
     
     return NextResponse.json({ ...JSON.parse(text), raw_text: liveContent });
 
