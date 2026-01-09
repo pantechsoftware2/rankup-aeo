@@ -45,9 +45,6 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
 
         {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-6">
-          <button className="hidden md:block text-sm font-medium text-gray-400 hover:text-white transition-colors">
-            Log In
-          </button>
           <button className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all hover:scale-105 flex items-center gap-2 group">
             Book Demo
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
