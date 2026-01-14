@@ -1,0 +1,104 @@
+import axios from 'axios';
+
+// 1. EXPORT THE INTERFACE DIRECTLY
+// This fixes the "SearchScanResult not exported" error in other files.
+export interface SearchScanResult {
+  title: string;
+  link: string;
+  snippet: string;
+}
+
+/**
+ * Helper: Performs a single Serper query
+ */
+async function searchSerper(query: string, retries = 2): Promise<SearchScanResult[]> {
+  const serperApiKey = process.env.SERPER_API_KEY;
+
+  if (!serperApiKey) {
+    console.error('SERPER_API_KEY is not set.');
+    return [];
+  }
+
+  // console.log(`🔍 Searching Serper.dev: ${query}`);
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await axios.post(
+        'https://google.serper.dev/search',
+        JSON.stringify({ 
+          q: query, 
+          num: 10, // Get top 10 for each query type
+          gl: 'us', // targeted country (optional, defaults to US)
+          hl: 'en'  // language
+        }),
+        {
+          headers: {
+            'X-API-KEY': serperApiKey,
+            'Content-Type': 'application/json',
+          },
+          timeout: 20000,
+        }
+      );
+
+      const data = response.data;
+      const results: SearchScanResult[] = (data.organic || []).map((item: any) => ({
+        title: item.title || '',
+        link: item.link || '',
+        snippet: item.snippet || '',
+      }));
+
+      if (results.length > 0) {
+        return results;
+      }
+      
+      // If 0 results and we have retries left, throw to trigger retry
+      if (attempt < retries) throw new Error('No results found');
+      
+    } catch (error: any) {
+      if (attempt === retries) {
+        console.warn(`⚠️ Failed query "${query}" after ${retries} retries.`);
+        return [];
+      }
+      // Wait before retry (exponential backoff)
+      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    }
+  }
+
+  return [];
+}
+
+/**
+ * Main Function: Runs 3 strategic queries and returns a FLATTENED array
+ * compatible with gemini.ts
+ */
+export async function performBrandSearch(brandName: string): Promise<SearchScanResult[]> {
+  
+  // 1. Define the 3 Strategic Angles
+  const queries = [
+    `"${brandName}" reviews and complaints`,       // For Sentiment
+    `"${brandName}" competitors and alternatives`, // For Market Position
+    `top companies like ${brandName}`              // For Category Context
+  ];
+
+  console.log(`\n📋 Starting Deep Search for: ${brandName}...`);
+
+  // 2. Run them in Parallel (Faster than serial)
+  const promises = queries.map(q => searchSerper(q));
+  const resultsArrays = await Promise.all(promises);
+
+  // 3. Flatten and Deduplicate
+  const allResults: SearchScanResult[] = [];
+  const seenLinks = new Set<string>();
+
+  resultsArrays.flat().forEach(item => {
+    if (!seenLinks.has(item.link)) {
+      seenLinks.add(item.link);
+      allResults.push(item);
+    }
+  });
+
+  console.log(`✅ Search Complete. Found ${allResults.length} unique sources.`);
+
+  // 4. Return the flat array (This fixes the Type Error in route.ts)
+  return allResults;
+}

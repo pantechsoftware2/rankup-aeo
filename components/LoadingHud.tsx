@@ -3,26 +3,26 @@
 import { useEffect, useState } from 'react';
 
 const STEPS = [
-  "Initializing Neural Link...",          // 0ms
-  "Resolving Domain Architecture...",     // 800ms
-  "Extracting Semantic Entities...",      // 2000ms
-  "Evaluating E-E-A-T Signals...",        // 3500ms
-  "Cross-Referencing Knowledge Graphs...",// 5500ms
-  "Synthesizing Strategic Verdict..."     // 7500ms
+  "Scanning Google Search Results...",        // 0ms
+  "Analyzing Competitor Keywords...",         // 3000ms (3s)
+  "Detecting Regulatory Flags...",            // 6000ms (6s)
+  "Compiling AEO Score...",                   // 9000ms (9s)
+  "Cross-Referencing Citation Sources...",    // 12000ms (12s)
+  "Generating Content Opportunities..."       // 15000ms (15s)
 ];
 
 export default function LoadingHud() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    // REFINED TIMELINE: No "hanging" at the end.
+    // Progress through steps every 3 seconds for 15-30 second analysis
     const timeline = [
-      800,   // Step 0 -> 1 (Fast start)
-      1200,  // Step 1 -> 2
-      1500,  // Step 2 -> 3
-      2000,  // Step 3 -> 4 (Deep Thinking)
-      2500,  // Step 4 -> 5 (Calculations)
-      1500   // Step 5 -> Finish (Wait only 1.5s here)
+      3000,  // Step 0 -> 1: Scanning complete
+      3000,  // Step 1 -> 2: Competitor analysis
+      3000,  // Step 2 -> 3: Regulatory detection
+      3000,  // Step 3 -> 4: AEO scoring
+      3000,  // Step 4 -> 5: Citation analysis
+      3000   // Step 5 -> Complete: Content strategy
     ];
 
     let stepIndex = 0;

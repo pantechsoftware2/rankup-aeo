@@ -6,7 +6,7 @@ const MIN_TEXT_LENGTH = 300;
 
 // Your API Key (Get a free one from ZenRows, ScraperAPI, etc.)
 // For now, if this is missing, it just returns the empty shell (current behavior)
-const SCRAPER_API_KEY = process.env.SCRAPER_API_KEY; 
+const ZENROWS_API_KEY = process.env.ZENROWS_API_KEY; 
 
 export async function fetchSmart(url: string) {
   console.log(`⚡ [SmartScraper] Attempting Tier 1 (Direct Fetch): ${url}`);
@@ -38,7 +38,7 @@ export async function fetchSmart(url: string) {
   }
 
   // --- TIER 2: HEADLESS BROWSER API (Fallback) ---
-  if (!SCRAPER_API_KEY) {
+  if (!ZENROWS_API_KEY) {
     console.error("❌ [SmartScraper] No API Key found for Tier 2. Returning Tier 1 result (likely empty).");
     // If we failed Tier 1 and have no Tier 2, re-fetch Tier 1 just to return something, or return empty string
     const retry = await fetch(url);
@@ -51,7 +51,7 @@ export async function fetchSmart(url: string) {
     // Example using ZenRows / ScraperAPI pattern (Adjust based on your provider)
     // Most work like: https://api.provider.com/?api_key=XYZ&url=TARGET&js_render=true
     
-    const apiUrl = `https://api.zenrows.com/v1/?apikey=${SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&js_render=true&premium_proxy=true`;
+    const apiUrl = `https://api.zenrows.com/v1/?apikey=${ZENROWS_API_KEY}&url=${encodeURIComponent(url)}&js_render=true&premium_proxy=true`;
     
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(`API fetch failed: ${res.status}`);

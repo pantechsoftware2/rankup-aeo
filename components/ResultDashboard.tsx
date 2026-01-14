@@ -99,9 +99,64 @@ const EmailGate = ({ onSubmit, email, setEmail, isSubmitting }: any) => (
   </div>
 );
 
+// --- GHOST_TOWN ALERT COMPONENT ---
+const GhostTownAlert = ({ onReset }: { onReset: () => void }) => (
+  <div className="w-full max-w-2xl mx-auto mt-20 p-8 bg-gradient-to-br from-red-900/30 to-red-950/50 border border-red-500/50 rounded-3xl text-center animate-in fade-in zoom-in duration-500 shadow-[0_0_60px_rgba(220,38,38,0.15)]">
+    <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent rounded-3xl"></div>
+    <div className="relative z-10">
+      <div className="inline-block p-4 bg-red-500/10 rounded-full mb-6 border border-red-500/20">
+        <span className="text-4xl">👻</span>
+      </div>
+      <h3 className="text-2xl font-bold text-red-400 mb-4 font-space uppercase tracking-widest">Ghost Town Detected</h3>
+      <p className="text-white text-lg mb-2 leading-relaxed">
+        Your website appears to be a digital ghost town with minimal AEO signals.
+      </p>
+      <p className="text-red-300 text-sm mb-8 max-w-md mx-auto">
+        Our analysis shows your content lacks the depth and structure needed to compete in today's AI-driven search landscape.
+      </p>
+      
+      <div className="bg-black/30 border border-red-500/30 rounded-xl p-6 mb-8 text-left">
+        <h4 className="text-red-400 text-sm font-bold uppercase tracking-widest mb-3">Critical Issues Found:</h4>
+        <ul className="text-gray-300 text-sm space-y-2">
+          <li className="flex items-start gap-2">
+            <span className="text-red-500 mt-1">•</span>
+            <span>Minimal content depth and quality signals</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-red-500 mt-1">•</span>
+            <span>Lack of structured data and schema markup</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-red-500 mt-1">•</span>
+            <span>Poor domain authority and backlink profile</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-red-500 mt-1">•</span>
+            <span>No clear competitive positioning</span>
+          </li>
+        </ul>
+      </div>
+
+      <div className="space-y-4">
+        <button 
+          onClick={onReset} 
+          className="px-8 py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-bold uppercase tracking-wider transition-all shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)]"
+        >
+          Book a Strategy Call
+        </button>
+        <p className="text-gray-500 text-xs">
+          Let's discuss how to transform your ghost town into a thriving digital destination
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
 // --- MAIN DASHBOARD COMPONENT ---
 
 export default function ResultDashboard({ result, onReset }: { result: any, onReset: () => void }) {
+  console.log('🎨 ResultDashboard received:', result);
+  
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -154,6 +209,11 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
   // Determine Badge Colors
   const industryColor = industry === "UNDEFINED" ? "red" : "blue";
   const nicheColor = niche === "UNDEFINED" ? "red" : "gray";
+
+  // Check for GHOST_TOWN status
+  if (result.verdict?.status === 'GHOST_TOWN') {
+    return <GhostTownAlert onReset={onReset} />;
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto pb-32 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -211,6 +271,7 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
               label="Domain Authority" 
               subLabel="Your website reputation score"
               score={result.scores?.authority} 
+
             />
             <ScoreBar 
               label="Technical AEO Schema" 
