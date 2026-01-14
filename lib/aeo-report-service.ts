@@ -3,7 +3,7 @@ import { AEOReportData } from '@/types/aeo-report';
 /**
  * FALLBACK / MOCK DATA
  * Used when the AI fails or for testing.
- * Updated to match the strict AEOReportData interface (Competitors = strings).
+ * Updated to match the strict AEOReportData interface.
  */
 export const MOCK_REPORT: AEOReportData = {
   status: 'SUCCESS',
@@ -57,17 +57,19 @@ export const MOCK_REPORT: AEOReportData = {
 
 /**
  * Legacy Service Function
- * Kept to ensure old API routes (like /api/deep) do not crash the build.
+ * FIX: Now accepts both 'url' and 'brandName' to prevent 'Expected 1 argument, got 2' errors.
  */
-export async function generateAEOReport(brandName: string): Promise<AEOReportData> {
+export async function generateAEOReport(url: string, brandName: string = ''): Promise<AEOReportData> {
   // Simulating a delay for legacy calls
   await new Promise(resolve => setTimeout(resolve, 1000));
   
+  // Use brandName if available, otherwise fallback to URL
+  const displayName = brandName || url || "Brand";
+
   // Return the type-safe mock data
-  // In the future, you can point this to the new Gemini logic if needed.
   return {
     ...MOCK_REPORT,
-    summary: `Mock analysis for ${brandName}. (Legacy Service)`
+    summary: `Mock analysis for ${displayName}. (Legacy Service)`
   };
 }
 
