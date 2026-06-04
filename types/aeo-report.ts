@@ -1,7 +1,16 @@
 import { z } from 'zod';
 
-// 1. The Interface (Used by Frontend & Gemini)
-export interface AEOReportData {
+/**
+ * LEGACY TYPE - Deprecated
+ * This interface was used by the old Serper-based brand mention scan.
+ * The new flow uses DeepAuditReport and FastScanResult from deep-audit.ts and scan-context.tsx
+ * 
+ * Kept only for backward compatibility if any old /api routes still reference it.
+ * All new components should use the updated audit report types.
+ */
+
+// 1. The Interface (Used by old flow - GhostTownReceipts, aeo-analyzer.ts)
+export interface LegacyAEOReport {
   status: 'SUCCESS' | 'GHOST_TOWN' | 'ERROR';
   visibility: {
     score: number;
@@ -31,8 +40,11 @@ export interface AEOReportData {
   };
 }
 
-// 2. The Schema (Used by API Routes for Validation)
-export const AEOReportDataSchema = z.object({
+// Alias for backward compatibility (deprecated - use LegacyAEOReport instead)
+export type AEOReportData = LegacyAEOReport;
+
+// 2. The Schema (Used by old API Routes - deprecated)
+export const LegacyAEOReportSchema = z.object({
   status: z.enum(['SUCCESS', 'GHOST_TOWN', 'ERROR']),
   visibility: z.object({
     score: z.number(),
@@ -63,3 +75,6 @@ export const AEOReportDataSchema = z.object({
     tierC: z.number()
   }).optional()
 });
+
+// Alias for backward compatibility (deprecated - use LegacyAEOReportSchema instead)
+export const AEOReportDataSchema = LegacyAEOReportSchema;

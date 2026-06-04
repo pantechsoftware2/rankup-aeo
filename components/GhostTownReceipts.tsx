@@ -76,10 +76,10 @@ export default function GhostTownReceipts({ data }: GhostTownReceiptsProps) {
         </div>
 
         {/* AI DIAGNOSIS BOX */}
-        <div className="mt-6 pt-6 border-t border-white/5">
+          <div className="mt-6 pt-6 border-t border-white/5">
           <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">AI Model Diagnosis</p>
           <div className="font-mono text-xs text-red-300 bg-red-950/30 p-4 rounded border border-red-900/50 leading-relaxed">
-            {`> STATUS: REJECTED. AI models cannot form a "personality" opinion on this brand without narrative data.`}
+            {`> STATUS: REJECTED. AI models cannot form a &quot;personality&quot; opinion on this brand without narrative data.`}
           </div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function GhostTownReceipts({ data }: GhostTownReceiptsProps) {
               <div className="p-1.5 bg-indigo-500/20 rounded-md">
                 <Zap className="w-4 h-4 text-indigo-400" />
               </div>
-              <h3 className="text-lg font-bold text-white">Don't Stay Invisible</h3>
+              <h3 className="text-lg font-bold text-white">Don&apos;t Stay Invisible</h3>
             </div>
             <p className="text-zinc-400 text-sm max-w-sm">
               We can force AI models to see you. Get a custom <span className="text-white font-medium">Discussion Injection Strategy</span> tailored to your brand.

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Analytics } from '@vercel/analytics/next';
 import { Inter, Space_Grotesk } from "next/font/google"; // Import the fonts
 import "./globals.css";
+import { ScanProvider } from "@/lib/scan-context";
+import { getOrganizationJsonLd, getRootMetadata, getWebsiteJsonLd } from "@/lib/seo";
 
 // 1. Configure the fonts
 const inter = Inter({ 
@@ -15,21 +18,31 @@ const space = Space_Grotesk({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: "RankUp AEO",
-  description: "Dominate Search with AEO Intelligence",
-};
+export const metadata: Metadata = getRootMetadata();
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationJsonLd = getOrganizationJsonLd();
+  const websiteJsonLd = getWebsiteJsonLd();
+
   return (
     <html lang="en">
-      {/* 2. Inject the font variables into the body */}
       <body className={`${inter.variable} ${space.variable} font-sans bg-black text-white antialiased`}>
-        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
+        <ScanProvider>
+          {children}
+        </ScanProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -1,4 +1,7 @@
+
+
 // 1. EXPORT THE INTERFACE DIRECTLY
+// This fixes the "SearchScanResult not exported" error in other files.
 export interface SearchScanResult {
   title: string;
   link: string;
@@ -8,7 +11,7 @@ export interface SearchScanResult {
 /**
  * Helper: Performs a single Serper query
  */
-async function searchSerper(query: string, retries = 2): Promise<SearchScanResult[]> {
+export async function searchSerper(query: string, retries = 2): Promise<SearchScanResult[]> {
   const serperApiKey = process.env.SERPER_API_KEY;
 
   if (!serperApiKey) {
@@ -16,8 +19,13 @@ async function searchSerper(query: string, retries = 2): Promise<SearchScanResul
     return [];
   }
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
+  // console.log(`🔍 Searching Serper.dev: ${query}`);
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const response = await fetch('https://google.serper.dev/search', {
         method: 'POST',
         headers: {
@@ -26,15 +34,17 @@ async function searchSerper(query: string, retries = 2): Promise<SearchScanResul
         },
         body: JSON.stringify({
           q: query,
-          num: 10,
-          gl: 'us',
-          hl: 'en',
+          num: 10, // Get top 10 for each query type
+          gl: 'us', // targeted country (optional, defaults to US)
+          hl: 'en'  // language
         }),
-        signal: AbortSignal.timeout(20000),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Serper responded with ${response.status}`);
+        throw new Error(`Serper API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -47,10 +57,10 @@ async function searchSerper(query: string, retries = 2): Promise<SearchScanResul
       if (results.length > 0) {
         return results;
       }
-
+      
       // If 0 results and we have retries left, throw to trigger retry
       if (attempt < retries) throw new Error('No results found');
-
+      
     } catch (error: any) {
       if (attempt === retries) {
         console.warn(`⚠️ Failed query "${query}" after ${retries} retries.`);
@@ -66,19 +76,24 @@ async function searchSerper(query: string, retries = 2): Promise<SearchScanResul
 
 /**
  * Main Function: Runs 3 strategic queries and returns a FLATTENED array
+ * compatible with gemini.ts
  */
 export async function performBrandSearch(brandName: string): Promise<SearchScanResult[]> {
+  
+  // 1. Define the 3 Strategic Angles
   const queries = [
     `"${brandName}" reviews and complaints`,       // For Sentiment
     `"${brandName}" competitors and alternatives`, // For Market Position
-    `top companies like ${brandName}`,             // For Category Context
+    `top companies like ${brandName}`              // For Category Context
   ];
 
   console.log(`\n📋 Starting Deep Search for: ${brandName}...`);
 
-  const resultsArrays = await Promise.all(queries.map(q => searchSerper(q)));
+  // 2. Run them in Parallel (Faster than serial)
+  const promises = queries.map(q => searchSerper(q));
+  const resultsArrays = await Promise.all(promises);
 
-  // Flatten and deduplicate
+  // 3. Flatten and Deduplicate
   const allResults: SearchScanResult[] = [];
   const seenLinks = new Set<string>();
 
@@ -91,5 +106,6 @@ export async function performBrandSearch(brandName: string): Promise<SearchScanR
 
   console.log(`✅ Search Complete. Found ${allResults.length} unique sources.`);
 
+  // 4. Return the flat array (This fixes the Type Error in route.ts)
   return allResults;
 }

@@ -1,65 +1,40 @@
-'use client';
+import type { Metadata } from 'next';
+import HomePageClient from '@/components/HomePageClient';
+import { buildPageMetadata, getHomepageFaqJsonLd, getServiceJsonLd } from '@/lib/seo';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Added for the redirect logic
+export const metadata: Metadata = buildPageMetadata({
+  title: 'SEO + AEO for Businesses That Need More Google Visibility',
+  description:
+    'Run a free audit to see why your business is not getting found on Google and AI answer engines, then request a custom deep report and 90-day SEO + AEO growth plan.',
+  path: '/',
+  keywords: [
+    'SEO audit',
+    'AEO audit',
+    'Google visibility',
+    'AI search audit',
+    'small business SEO agency',
+    'answer engine optimization',
+    'ChatGPT visibility',
+    'Google AI Overviews optimization',
+    'SEO retainer',
+  ],
+});
 
-// --- COMPONENTS ---
-// Restoring your exact component imports
-import Hero from '../components/Hero';
-import LoadingHud from '../components/LoadingHud';
-import LandingContent from '../components/LandingContent';
-
-export default function Home() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  // Updated handler to use the NEW single endpoint (backend fix)
-  const handleAnalyze = async (website: string) => {
-    setLoading(true);
-
-    try {
-      // CALL THE WORKING SINGLE ENDPOINT
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // Map the input (website/brand) to what the API expects
-        body: JSON.stringify({ brandName: website }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || 'Analysis failed');
-
-      // SUCCESS: Save data and redirect to the working Preview Page
-      console.log("Analysis success, redirecting...");
-      localStorage.setItem('latestAnalysis', JSON.stringify(data));
-      router.push('/report-preview');
-
-    } catch (error: any) {
-      console.error("Audit Failed:", error);
-      alert(error.message || "Failed to connect to RankUp Neural Cloud.");
-      setLoading(false); // Only stop loading if we failed (otherwise we are redirecting)
-    }
-  };
+export default function HomePage() {
+  const serviceJsonLd = getServiceJsonLd();
+  const faqJsonLd = getHomepageFaqJsonLd();
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white selection:bg-green-500/30">
-      
-      {/* 1. LOADING STATE (Restored your LoadingHud) */}
-      {loading && <LoadingHud />}
-
-      {/* 2. MAIN CONTENT */}
-      {/* We removed the inline ResultDashboard conditional because we now redirect 
-          to the dedicated /report-preview page to prevent the crash loop. */}
-      
-      <div className="relative z-0">
-        {/* Your Input Section */}
-        <Hero onAnalyze={handleAnalyze} />
-        
-        {/* Your "Scintillating" Educational Content */}
-        <LandingContent />
-      </div>
-
-    </main>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <HomePageClient />
+    </>
   );
 }

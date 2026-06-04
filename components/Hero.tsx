@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
-export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }) {
+export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promise<void> }) {
   const [url, setUrl] = useState('');
   const [touched, setTouched] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Regex: matches "text" + "." + "2+ letters" (e.g. .com, .ai, .co)
   const isValidDomain = (input: string) => {
     // Strip http/https/www for the check if needed, but simple regex works for user input
@@ -18,10 +19,18 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
 
   const isInvalid = url.length > 0 && !isValidDomain(url);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isValidDomain(url)) {
-      onAnalyze(url);
+      setIsSubmitting(true);
+      setTouched(false);
+      try {
+        await onAnalyze(url);
+      } catch (err) {
+        console.error('onAnalyze failed:', err);
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setTouched(true); // Show error if they try to force submit via Enter key
     }
@@ -45,10 +54,19 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
 
         {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-6">
-          <button className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all hover:scale-105 flex items-center gap-2 group">
-            Book Demo
+          <Link
+            href="/blog"
+            className="text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white"
+          >
+            Research
+          </Link>
+          <a
+            href="/audit-flow"
+            className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all hover:scale-105 flex items-center gap-2 group"
+          >
+            Get audit
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </a>
         </div>
       </nav>
 
@@ -67,7 +85,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-widest text-green-400 mb-8"
         >
           <Sparkles className="w-3 h-3" />
-          AEO Intelligence Engine v2.0
+          SEO + AEO Visibility Audit
         </motion.div>
 
         {/* Headline */}
@@ -77,8 +95,8 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           transition={{ delay: 0.3 }}
           className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight font-space"
         >
-          Dominate Search in the <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800">Age of Answers.</span>
+          Your business should be <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800">getting found on Google.</span>
         </motion.h1>
 
         {/* Subhead */}
@@ -88,8 +106,30 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           transition={{ delay: 0.4 }}
           className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
         >
-          Reach millions of consumers who are using AI to discover new brands. Get your business recommended by ChatGPT, Gemini, and Perplexity.
+          Most businesses are far less visible on Google and AI answer engines than they think. That is usually not a demand problem. It is a packaging, authority, and search-structure problem. We fix both <span className="text-white font-semibold">SEO and AEO together</span>, then turn the audit into a focused 90-day retainer that starts moving visibility in the right direction.
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="mb-10 flex flex-wrap justify-center gap-3 text-[11px] font-mono uppercase tracking-wider text-zinc-300"
+        >
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Google rankings</div>
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">AI answer visibility</div>
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">90-day retainer rollout</div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.48 }}
+          className="mb-8 flex flex-wrap justify-center gap-3 text-[10px] font-mono uppercase tracking-[0.22em] text-zinc-500"
+        >
+          <div className="rounded-full border border-white/10 px-4 py-2">1. Get your free visibility audit</div>
+          <div className="rounded-full border border-white/10 px-4 py-2">2. Unlock report</div>
+          <div className="rounded-full border border-white/10 px-4 py-2">3. Book strategy call</div>
+        </motion.div>
 
         {/* Input Box Area */}
         <motion.div
@@ -114,10 +154,10 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
               />
               <button 
                 type="submit"
-                disabled={!isValidDomain(url)}
-                className="bg-white text-black px-6 py-3 rounded-lg font-bold text-xs md:text-sm hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                disabled={!isValidDomain(url) || isSubmitting}
+                className={`px-6 py-3 rounded-lg font-bold text-xs md:text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${isSubmitting ? 'bg-emerald-500 text-white cursor-wait shadow-md' : 'bg-white text-black hover:bg-gray-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                RUN FREE AUDIT
+                {isSubmitting ? 'SCANNING…' : 'GET YOUR FREE VISIBILITY AUDIT'}
               </button>
             </div>
           </form>
@@ -136,10 +176,11 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
             ) : (
               <div className="text-gray-500 flex items-center gap-2">
                 <CheckCircle2 className="w-3 h-3 text-green-500" />
-                <span>Get your free AEO report today. No credit card required.</span>
+                <span>Free teaser now. Custom report after review. If it&apos;s a fit, we&apos;ll show where a 3-month retainer changes the game.</span>
               </div>
             )}
           </div>
+
         </motion.div>
 
         {/* Footer Trust Signals */}
@@ -149,10 +190,11 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => void }
           transition={{ delay: 0.8 }}
           className="mt-16 flex justify-center gap-8 opacity-30 grayscale"
         >
-           <span className="text-xs font-mono font-bold text-white">OPTIMIZED FOR:</span>
+           <span className="text-xs font-mono font-bold text-white">VISIBILITY ACROSS:</span>
            <span className="text-xs font-mono text-white">CHATGPT</span>
            <span className="text-xs font-mono text-white">GEMINI</span>
            <span className="text-xs font-mono text-white">PERPLEXITY</span>
+           <span className="text-xs font-mono text-white">GOOGLE</span>
         </motion.div>
 
       </div>

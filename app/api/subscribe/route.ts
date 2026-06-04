@@ -1,227 +1,130 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { createDeepReportJob } from '@/lib/report-jobs';
+import { buildReviewUrl, getLeadEmailConfig, isLikelyValidPhone, isValidEmail, normalizePhone, sendBrevoEmail } from '@/lib/lead-capture';
+import { writeLeadLog } from '@/lib/lead-log';
+import type { LeadSource } from '@/types/consulting-report';
 
-/**
- * Subscribe Route - Handles "Get Full Audit" email trigger
- * 
- * This route:
- * 1. Validates the email address
- * 2. Sends a transactional email via Brevo with the audit report data
- * 3. Optionally adds the contact to the Brevo list for future communications
- * 
- * Future: Will trigger deep blog audit analysis before sending email
- */
+function inferBrandName(website?: string, reportData?: any) {
+  if (reportData?.fast?.classification?.niche) {
+    return reportData.fast.classification.niche;
+  }
+
+  if (!website) {
+    return 'your site';
+  }
+
+  try {
+    return new URL(website).hostname.replace(/^www\./, '');
+  } catch {
+    return website;
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const { email, reportData } = await req.json();
-    
-    // Validation
-    if (!email || !email.includes('@')) {
-      return NextResponse.json(
-        { error: true, message: 'Invalid email address' },
-        { status: 400 }
-      );
+    const { email, name, phone, company, website, source, reportData } = await req.json();
+
+    if (!email || !isValidEmail(email)) {
+      return NextResponse.json({ error: true, message: 'Invalid email address' }, { status: 400 });
     }
 
-    const apiKey = process.env.BREVO_API_KEY;
-    if (!apiKey) {
-      console.error('❌ BREVO_API_KEY not configured');
-      return NextResponse.json(
-        { error: true, message: 'Email service not configured' },
-        { status: 500 }
-      );
+    if (!name || name.trim().length < 2) {
+      return NextResponse.json({ error: true, message: 'Name is required' }, { status: 400 });
     }
 
-    console.log(`\n📧 Sending Full Audit email to: ${email}`);
-    console.log(`   Report data included: ${reportData ? 'Yes' : 'No'}`);
-
-    // Step 1: Add contact to Brevo list (for future communications)
-    try {
-      const contactResponse = await fetch('https://api.brevo.com/v3/contacts', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'content-type': 'application/json',
-          'api-key': apiKey
-        },
-        body: JSON.stringify({
-          email: email,
-          updateEnabled: true,
-          attributes: {
-            SIGNUP_DATE: new Date().toISOString(),
-            SOURCE: 'AEO_FULL_AUDIT',
-            LAST_AUDIT_DATE: new Date().toISOString()
-          }
-        })
-      });
-
-      if (contactResponse.ok) {
-        console.log('   ✓ Contact added to Brevo list');
-      } else {
-        const error = await contactResponse.json();
-        if (error.code === 'duplicate_parameter') {
-          console.log('   ℹ️  Contact already exists in Brevo');
-        } else {
-          console.warn('   ⚠️  Failed to add contact:', error);
-        }
-      }
-    } catch (error) {
-      console.warn('   ⚠️  Contact creation failed (non-critical):', error);
+    if (!phone || !isLikelyValidPhone(phone)) {
+      return NextResponse.json({ error: true, message: 'A valid phone number is required' }, { status: 400 });
     }
 
-    // Step 2: Send transactional email with audit report
-    const emailPayload = {
-      sender: {
-        name: 'AEO Audit Tool',
-        email: 'noreply@aeo-audit.com'
+    if (!website) {
+      return NextResponse.json({ error: true, message: 'Website is required' }, { status: 400 });
+    }
+
+    const brandLabel = inferBrandName(website, reportData);
+    const job = await createDeepReportJob({
+      source: (source || 'report_preview_gate') as LeadSource,
+      website,
+      brandName: brandLabel,
+      lead: {
+        name: name.trim(),
+        email: email.trim(),
+        phone: normalizePhone(phone),
+        company: company?.trim() || undefined,
       },
-      to: [
-        {
-          email: email
-        }
-      ],
-      subject: 'Your Full AEO Audit Report is Ready! 🚀',
-      htmlContent: generateAuditEmailHTML(reportData),
-      textContent: generateAuditEmailText(reportData)
-    };
-
-    const emailResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'content-type': 'application/json',
-        'api-key': apiKey
-      },
-      body: JSON.stringify(emailPayload)
     });
 
-    if (!emailResponse.ok) {
-      const error = await emailResponse.json();
-      console.error('❌ Brevo email send error:', error);
-      return NextResponse.json(
-        { error: true, message: 'Failed to send email' },
-        { status: 500 }
-      );
-    }
+    const { adminEmail, appUrl, bookDemoUrl } = getLeadEmailConfig();
+    const callToActionUrl = bookDemoUrl || `${appUrl}/audit-flow`;
+    const reviewUrl = buildReviewUrl(`/review/${job.id}`);
 
-    const result = await emailResponse.json();
-    console.log(`✅ Email sent successfully! Message ID: ${result.messageId}\n`);
+    await writeLeadLog('deep-report-request', {
+      source: job.source,
+      jobId: job.id,
+      website: job.website,
+      brandName: job.brandName,
+      name: job.lead.name,
+      email: job.lead.email,
+      phone: job.lead.phone,
+      company: job.lead.company || null,
+    });
+
+    await sendBrevoEmail({
+      to: [{ email: adminEmail }],
+      subject: `New custom report request: ${name} (${brandLabel})`,
+      htmlContent: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;max-width:680px;margin:0 auto;padding:24px;">
+          <div style="background:#0f172a;color:white;padding:24px;border-radius:16px;">
+            <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#93c5fd;">New Lead Captured</div>
+            <h1 style="margin:8px 0 0;font-size:28px;">Custom deep-report request</h1>
+          </div>
+          <div style="padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 16px 16px;">
+            <p><strong>${name}</strong> requested a custom report for <strong>${website}</strong>.</p>
+            <p>Email: ${email}<br />Phone: ${normalizePhone(phone)}<br />Company: ${company || 'Not provided'}<br />Job ID: ${job.id}</p>
+            <p><a href="${reviewUrl}" style="display:inline-block;background:#111827;color:white;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;">Open Review Queue</a></p>
+          </div>
+        </div>
+      `,
+      textContent: `Custom report request\nName: ${name}\nEmail: ${email}\nPhone: ${normalizePhone(phone)}\nWebsite: ${website}\nJob ID: ${job.id}\nReview: ${reviewUrl}`,
+      replyTo: { email, name },
+    });
+
+    await sendBrevoEmail({
+      to: [{ email, name }],
+      subject: 'Your custom RankUp report is being prepared',
+      htmlContent: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;max-width:680px;margin:0 auto;padding:24px;">
+          <div style="background:#052e16;color:white;padding:24px;border-radius:16px;">
+            <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#86efac;">Request Received</div>
+            <h1 style="margin:8px 0 0;font-size:28px;">We’re preparing your custom SEO + GEO report</h1>
+          </div>
+          <div style="padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 16px 16px;">
+            <p>Hi ${name},</p>
+            <p>We received your request for <strong>${website}</strong>. The instant scan gave you the teaser; the deeper consultant-style report is being prepared now and will be sent to this inbox as a PDF.</p>
+            <p>Job ID: <code>${job.id}</code></p>
+            <div style="background:#111827;color:white;border-radius:12px;padding:18px;margin:20px 0;">
+              <div style="font-weight:700;margin-bottom:8px;">Want to review it live with us?</div>
+              <div style="color:#d1d5db;">Book the paid strategy call now so we can walk through priorities, rollout order, and whether we should handle implementation.</div>
+            </div>
+            <a href="${callToActionUrl}" style="display:inline-block;background:#111827;color:white;padding:14px 26px;border-radius:10px;text-decoration:none;font-weight:700;">
+              Book Paid Strategy Call
+            </a>
+          </div>
+        </div>
+      `,
+      textContent: `We received your request for ${website}. The custom report is being prepared and will be emailed as a PDF. Book the paid strategy call: ${callToActionUrl}`,
+      replyTo: { email: adminEmail, name: 'RankUp AEO' },
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Full audit email sent successfully',
-      messageId: result.messageId
+      message: 'Custom report request submitted successfully',
+      jobId: job.id,
     });
-
   } catch (error: any) {
-    console.error('❌ Subscribe route error:', error);
+    console.error('Custom report request error:', error);
     return NextResponse.json(
       { error: true, message: error.message || 'Internal server error' },
       { status: 500 }
     );
   }
-}
-
-/**
- * Generates HTML email content for the audit report
- */
-function generateAuditEmailHTML(reportData: any): string {
-  const brandName = reportData?.brandName || 'Your Brand';
-  const timestamp = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  // If we have full report data, include insights
-  let insightsSection = '';
-  if (reportData?.report) {
-    const report = reportData.report;
-    insightsSection = `
-      <h2 style="color: #2563eb; margin-top: 30px;">Key Findings</h2>
-      <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p><strong>Overall Sentiment:</strong> ${report.overallSentiment || 'Analyzing...'}</p>
-        <p><strong>Top Strength:</strong> ${report.strengths?.[0] || 'Strong market presence'}</p>
-        <p><strong>Priority Opportunity:</strong> ${report.contentGaps?.[0] || 'Expand content coverage'}</p>
-      </div>
-    `;
-  }
-
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Your Full AEO Audit is Ready! 🚀</h1>
-      </div>
-      
-      <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-        <p style="font-size: 16px;">Great news! We've completed a comprehensive Answer Engine Optimization audit for <strong>${brandName}</strong>.</p>
-        
-        ${insightsSection}
-        
-        <h2 style="color: #2563eb; margin-top: 30px;">What's Included in Your Audit</h2>
-        <ul style="line-height: 2;">
-          <li>✓ Sentiment Analysis across search results</li>
-          <li>✓ Competitor positioning insights</li>
-          <li>✓ Content gap identification</li>
-          <li>✓ Actionable optimization recommendations</li>
-          <li>✓ Priority action items ranked by impact</li>
-        </ul>
-        
-        <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 15px; margin: 25px 0;">
-          <p style="margin: 0;"><strong>💡 Pro Tip:</strong> Focus on the Priority Actions first for maximum impact on your Answer Engine visibility.</p>
-        </div>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://aeo-audit.com'}/audit-flow" 
-             style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-            View Your Full Report
-          </a>
-        </div>
-        
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        
-        <p style="color: #6b7280; font-size: 14px; text-align: center;">
-          Generated on ${timestamp}<br>
-          Questions? Reply to this email or visit our <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://aeo-audit.com'}" style="color: #2563eb;">help center</a>.
-        </p>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-/**
- * Generates plain text email content for the audit report
- */
-function generateAuditEmailText(reportData: any): string {
-  const brandName = reportData?.brandName || 'Your Brand';
-  const timestamp = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  return `
-Your Full AEO Audit is Ready!
-
-Great news! We've completed a comprehensive Answer Engine Optimization audit for ${brandName}.
-
-What's Included in Your Audit:
-- Sentiment Analysis across search results
-- Competitor positioning insights
-- Content gap identification
-- Actionable optimization recommendations
-- Priority action items ranked by impact
-
-View your full report: ${process.env.NEXT_PUBLIC_APP_URL || 'https://aeo-audit.com'}/audit-flow
-
-Generated on ${timestamp}
-
-Questions? Reply to this email or visit our help center.
-  `;
 }

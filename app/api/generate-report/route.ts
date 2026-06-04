@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAEOReport } from '@/lib/aeo-report-service';
-import { AEOReportDataSchema } from '@/types/aeo-report';
+import { performFastScan } from '@/lib/fast-scan';
+import { performDeepScan } from '@/lib/deep-scan';
+import { applyRateLimit, isUserUrlValidationError, validatePublicAuditUrl } from '@/lib/security';
+import type { DeepAuditReport } from '@/types/deep-audit';
 
 /**
  * POST /api/generate-report
@@ -15,6 +17,22 @@ import { AEOReportDataSchema } from '@/types/aeo-report';
  */
 export async function POST(request: NextRequest) {
   try {
+    const rateLimit = applyRateLimit(request, {
+      key: 'generate-report',
+      limit: 6,
+      windowMs: 10 * 60 * 1000,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait and try again.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) },
+        }
+      );
+    }
+
     const body = await request.json();
     const { url, brandName } = body;
 
@@ -26,28 +44,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate URL format
-    try {
-      new URL(url);
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid URL format' },
-        { status: 400 }
-      );
-    }
+    const normalizedUrl = await validatePublicAuditUrl(url);
 
-    console.log(`📊 Generating AEO Report for: ${brandName} (${url})`);
+    console.log(`📊 Generating AEO Report for: ${brandName} (${normalizedUrl})`);
 
-    // Generate the report
-    const reportData = await generateAEOReport(url, brandName);
+    // Run fast -> deep to produce an audit report
+    const fastResult = await performFastScan(normalizedUrl);
+    const deepResult = await performDeepScan(fastResult.crawl, fastResult.fast);
 
-    // Validate the response matches our schema
-    const validatedData = AEOReportDataSchema.parse(reportData);
+    const report: DeepAuditReport | null = deepResult?.report || null;
 
-    return NextResponse.json({
-      success: true,
-      data: validatedData,
-    });
+    return NextResponse.json({ success: true, report, raw: { fast: fastResult, deep: deepResult } });
   } catch (error) {
     console.error('Error generating AEO report:', error);
     
@@ -56,7 +63,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to generate AEO report',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: isUserUrlValidationError(error instanceof Error ? error.message : '') ? 400 : 500 }
     );
   }
 }

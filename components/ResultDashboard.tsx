@@ -111,8 +111,8 @@ const GhostTownAlert = ({ onReset }: { onReset: () => void }) => (
       <p className="text-white text-lg mb-2 leading-relaxed">
         Your website appears to be a digital ghost town with minimal AEO signals.
       </p>
-      <p className="text-red-300 text-sm mb-8 max-w-md mx-auto">
-        Our analysis shows your content lacks the depth and structure needed to compete in today's AI-driven search landscape.
+        <p className="text-red-300 text-sm mb-8 max-w-md mx-auto">
+        Our analysis shows your content lacks the depth and structure needed to compete in today&apos;s AI-driven search landscape.
       </p>
       
       <div className="bg-black/30 border border-red-500/30 rounded-xl p-6 mb-8 text-left">
@@ -145,7 +145,7 @@ const GhostTownAlert = ({ onReset }: { onReset: () => void }) => (
           Book a Strategy Call
         </button>
         <p className="text-gray-500 text-xs">
-          Let's discuss how to transform your ghost town into a thriving digital destination
+          Let&apos;s discuss how to transform your ghost town into a thriving digital destination
         </p>
       </div>
     </div>
@@ -334,7 +334,7 @@ export default function ResultDashboard({ result, onReset }: { result: any, onRe
                   <span className="text-red-500 text-xl">?</span>
                   <span className="text-[10px] uppercase tracking-widest text-gray-600 border border-white/10 px-2 py-1 rounded">{opp.volume} Vol</span>
                 </div>
-                <p className="text-white font-medium leading-snug">"{opp.question}"</p>
+                <p className="text-white font-medium leading-snug">&quot;{opp.question}&quot;</p>
               </div>
             ))}
           </div>

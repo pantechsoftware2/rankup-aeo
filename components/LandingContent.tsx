@@ -1,15 +1,23 @@
 'use client';
 
 import { motion, Variants } from 'framer-motion';
+import Link from 'next/link';
+import OperatorProof from '@/components/OperatorProof';
 import { 
+  ArrowRight,
   BrainCircuit, 
   CheckCircle2, 
   Code2, 
   Database, 
+  FileText,
+  Gauge,
+  MessagesSquare,
   Search, 
   Sparkles, 
   Zap 
 } from 'lucide-react';
+import { getAllBlogPosts } from '@/lib/blog';
+import { getLandingPages } from '@/lib/landing-pages';
 
 // --- ANIMATION CONFIGURATIONS ---
 
@@ -40,6 +48,10 @@ const graphLine: Variants = {
 };
 
 export default function LandingContent() {
+  const researchPosts = getAllBlogPosts().slice(0, 3);
+  const servicePages = getLandingPages('service').slice(0, 4);
+  const industryPages = getLandingPages('industry').slice(0, 4);
+
   return (
     <div className="w-full bg-[#050505] text-gray-300 overflow-hidden relative">
       
@@ -59,18 +71,18 @@ export default function LandingContent() {
           >
             <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-6">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-xs font-mono text-red-400 uppercase tracking-widest">Market Alert</span>
+              <span className="text-xs font-mono text-red-400 uppercase tracking-widest">Visibility Gap</span>
             </motion.div>
             
             <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight font-space">
-              You are losing traffic to <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">"Zero-Click" Answers.</span>
+              Most businesses are <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">less visible than they think.</span>
             </motion.h2>
             
             <motion.p variants={fadeInUp} className="text-lg text-gray-400 leading-relaxed mb-8">
-              Your customers are no longer scrolling through 10 blue links. They are asking AI a direct question and getting a direct answer.
+              Search behavior changed faster than most business websites did. People still discover companies through Google, but now they also ask ChatGPT, Gemini, Perplexity, and AI Overviews to narrow the field before they ever click.
               <br /><br />
-              The hard truth: <strong className="text-white">If ChatGPT gives the answer, the user never visits your site.</strong> Unless you are the source of that answer.
+              The hard truth: <strong className="text-white">if your site is weak, vague, or poorly structured, you do not get chosen.</strong> The opportunity is that fixing this is usually far more practical than people assume.
             </motion.p>
           </motion.div>
 
@@ -82,10 +94,10 @@ export default function LandingContent() {
             className="relative bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm"
           >
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-sm font-mono text-gray-500 uppercase">Traffic Trends (2022-2026)</h3>
+              <h3 className="text-sm font-mono text-gray-500 uppercase">Discovery Shift</h3>
               <div className="flex gap-4 text-[10px]">
-                <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-green-500" /> AI Usage</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-gray-500" /> Web Clicks</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-green-500" /> Answer-driven search</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-gray-500" /> Unoptimized sites</div>
               </div>
             </div>
 
@@ -116,9 +128,54 @@ export default function LandingContent() {
                 transition={{ delay: 2, duration: 0.5 }}
                 className="absolute top-[20%] right-[10%] bg-red-500/20 border border-red-500 text-red-400 text-xs px-3 py-1 rounded-full backdrop-blur-md"
               >
-                The Zero-Click Gap
+                Where leads leak
               </motion.div>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-24 px-6 border-y border-white/5 bg-gradient-to-b from-green-500/[0.04] to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold text-white mb-6 font-space">
+              The path is simple
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="max-w-3xl mx-auto text-gray-400">
+              We want this to feel obvious. First you see the visibility gap. Then you request the deeper report. Then, if the upside is real, you move into a strategy call and a 90-day execution plan.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            <FunnelStepCard
+              icon={<Search className="w-8 h-8 text-blue-400" />}
+              eyebrow="Step 1"
+              title="Get your free visibility audit"
+              desc="Drop in your domain and we show where your website is underperforming across Google and answer engines."
+            />
+            <FunnelStepCard
+              icon={<FileText className="w-8 h-8 text-purple-400" />}
+              eyebrow="Step 2"
+              title="Unlock the custom report"
+              desc="If the site has real upside, you leave your details and we prepare a deeper consultant-style report for your inbox."
+            />
+            <FunnelStepCard
+              icon={<MessagesSquare className="w-8 h-8 text-green-400" />}
+              eyebrow="Step 3"
+              title="Book the strategy call"
+              desc="Once the gaps are clear, we use the strategy call to show what the first 90 days would look like if we fix it with you."
+            />
           </motion.div>
         </div>
       </section>
@@ -133,10 +190,10 @@ export default function LandingContent() {
             className="text-center mb-20"
           >
             <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold text-white mb-6 font-space">
-              Don't "Rig" the System. <br /><span className="text-green-500">Engineer It.</span>
+              We do not sell vanity. <br /><span className="text-green-500">We fix the visibility stack.</span>
             </motion.h2>
             <motion.p variants={fadeInUp} className="max-w-2xl mx-auto text-gray-400">
-              AI models don't read like humans. They read data. We translate your brand into the native language of Artificial Intelligence: <strong>Vectors, Entities, and Knowledge Graphs.</strong>
+              This is not just &quot;AI optimization.&quot; It is SEO, authority, technical cleanup, and AI citability working together. If you already have a website, we can usually identify the bottlenecks quickly and start correcting them in a focused 90-day sprint.
             </motion.p>
           </motion.div>
 
@@ -148,29 +205,31 @@ export default function LandingContent() {
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             <ProcessCard 
-              icon={<Code2 className="w-8 h-8 text-blue-400" />}
-              title="Structural Clarity"
-              desc="We inject JSON-LD Schema that explicitly tells the AI: 'This is a Product. It costs $50. It is 5-star rated.'"
+              icon={<Search className="w-8 h-8 text-blue-400" />}
+              title="Get You Found"
+              desc="We tighten the pages, categories, and search intent alignment so Google can understand what you do and where you should rank."
               step="01" 
               color="blue"
             />
             <ProcessCard 
               icon={<Database className="w-8 h-8 text-purple-400" />}
-              title="Semantic Authority"
-              desc="We build a Knowledge Graph that links your brand to trusted industry entities, making your authority mathematically undeniable."
+              title="Make You Credible"
+              desc="We strengthen the trust layer: schema, entity signals, authority cues, and the supporting proof that AI systems and users both look for."
               step="02" 
               color="purple"
             />
             <ProcessCard 
               icon={<BrainCircuit className="w-8 h-8 text-green-400" />}
-              title="Information Gain"
-              desc="AI ignores generic content. We help you publish unique data insights (Information Gain) that AI *needs* to cite as a source."
+              title="Turn You Into The Better Answer"
+              desc="We reshape the messaging and content so your business can be cited, compared, and chosen in both classic search and answer engines."
               step="03" 
               color="green"
             />
           </motion.div>
         </div>
       </section>
+
+      <OperatorProof />
 
       {/* --- SECTION 3: EVOLUTION (SEO + AEO) --- */}
       <section className="py-32 px-6 relative">
@@ -181,10 +240,9 @@ export default function LandingContent() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl font-bold text-white mb-4 font-space">SEO is the Foundation. AEO is the Future.</h2>
+            <h2 className="text-3xl font-bold text-white mb-4 font-space">SEO gets you indexed. AEO gets you cited.</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              You don't need to abandon your SEO strategy. You need to supercharge it. 
-              Our <strong>Plug-and-Play AI Agents</strong> make your website AI-ready in minutes.
+              They are not competing strategies. They are the same visibility system viewed from two different angles. If your SEO is weak, your AEO will be weak too. If your site is technically sound, clearly positioned, and trustworthy, both improve together.
             </p>
           </motion.div>
 
@@ -203,14 +261,14 @@ export default function LandingContent() {
             >
               <div className="flex items-center gap-3 mb-8">
                 <Search className="text-gray-500 w-6 h-6" />
-                <h3 className="text-xl font-bold text-gray-300">Traditional SEO</h3>
+                <h3 className="text-xl font-bold text-gray-300">SEO Foundation</h3>
               </div>
-              <p className="text-sm text-gray-500 mb-6 font-mono uppercase tracking-widest">The Essential Foundation</p>
+              <p className="text-sm text-gray-500 mb-6 font-mono uppercase tracking-widest">What gets you in the consideration set</p>
               <ul className="space-y-6">
-                <ComparisonItem neutral text="Target: Google Search" />
-                <ComparisonItem neutral text="Goal: Rank #1 in 10 Blue Links" />
-                <ComparisonItem neutral text="Content: Keywords & Blogs" />
-                <ComparisonItem neutral text="Speed: Months to Rank" />
+                <ComparisonItem neutral text="Clear service and category targeting" />
+                <ComparisonItem neutral text="Technical cleanup, schema, and crawlability" />
+                <ComparisonItem neutral text="Pages built around real search intent" />
+                <ComparisonItem neutral text="Authority and trust that compound over time" />
               </ul>
             </motion.div>
 
@@ -224,15 +282,271 @@ export default function LandingContent() {
               <div className="absolute top-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e]" />
               <div className="flex items-center gap-3 mb-8">
                 <Sparkles className="text-green-400 w-6 h-6" />
-                <h3 className="text-xl font-bold text-white">RankUp AI Agents</h3>
+                <h3 className="text-xl font-bold text-white">AEO Layer</h3>
               </div>
-              <p className="text-sm text-green-500/70 mb-6 font-mono uppercase tracking-widest">The Force Multiplier</p>
+              <p className="text-sm text-green-500/70 mb-6 font-mono uppercase tracking-widest">What gets you chosen inside answer engines</p>
               <ul className="space-y-6">
-                <ComparisonItem text="Target: LLM Neural Networks" />
-                <ComparisonItem text="Goal: Be the ONLY answer cited" />
-                <ComparisonItem text="Content: Entities & Vectors" />
-                <ComparisonItem text="Speed: Optimized in Minutes" />
+                <ComparisonItem text="Entity clarity across your brand and offer" />
+                <ComparisonItem text="Citable proof blocks and stronger answers" />
+                <ComparisonItem text="Better comparison, category, and FAQ coverage" />
+                <ComparisonItem text="Visibility in ChatGPT, Gemini, Perplexity, and Google AI Overviews" />
               </ul>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-32 px-6 bg-white/[0.02] border-y border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold text-white mb-6 font-space">
+              Why the 90-day retainer works
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="max-w-3xl mx-auto text-gray-400">
+              We are not promising magic in a weekend. We are promising concentrated execution. Three months is enough time to diagnose the gaps, fix the pages that matter, rebuild authority signals, and start creating measurable movement for almost any business that already has a website.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            <ProcessCard
+              icon={<Gauge className="w-8 h-8 text-blue-400" />}
+              title="Month 1: Diagnose"
+              desc="We audit the site, clarify the offer, identify the trust leaks, and map the highest-leverage pages and queries."
+              step="01"
+              color="blue"
+            />
+            <ProcessCard
+              icon={<Code2 className="w-8 h-8 text-purple-400" />}
+              title="Month 2: Rebuild"
+              desc="We tighten the pages, schema, structure, and messaging so your site is easier to rank, easier to cite, and easier to trust."
+              step="02"
+              color="purple"
+            />
+            <ProcessCard
+              icon={<Zap className="w-8 h-8 text-green-400" />}
+              title="Month 3: Push"
+              desc="We expand the content and authority layer so the improvements start compounding instead of stalling after the audit."
+              step="03"
+              color="green"
+            />
+          </motion.div>
+
+          <motion.p
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="mt-10 text-center text-lg font-semibold text-gray-200"
+          >
+            90-day retainers start at <span className="text-[#ff7a59]">$7,500/month</span>. No
+            long-term contract — leave anytime. We quote precisely after the audit.
+          </motion.p>
+        </div>
+      </section>
+
+      <section className="py-32 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.h2 variants={fadeInUp} className="text-3xl md:text-5xl font-bold text-white mb-6 font-space">
+              What people usually need to know first
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="max-w-3xl mx-auto text-gray-400">
+              The short version: if you run a business with a website, you are probably leaving discoverability on the table. The audit shows the gap. The retainer fixes it.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <FaqCard
+              question="What do you actually fix?"
+              answer="We fix the visibility system behind the website: search intent alignment, page structure, messaging clarity, schema, authority signals, and the proof blocks that help both Google and answer engines trust what you do."
+            />
+            <FaqCard
+              question="Is this SEO or AEO?"
+              answer="Both. SEO gets your business into the ranking conversation. AEO helps your business get cited and chosen inside ChatGPT, Gemini, Perplexity, and Google AI Overviews. The work overlaps heavily, so we treat them as one stack."
+            />
+            <FaqCard
+              question="Who is this for?"
+              answer="Any real business with a website that wants more qualified discovery. You do not need to be a software company. If customers can search for what you do, we can usually improve how visible and credible you look."
+            />
+            <FaqCard
+              question="What happens after the audit?"
+              answer="You get a clear diagnosis, a surface-level action plan, and a recommendation on whether a 90-day retainer is the right move. If it is, we use that window to fix the highest-leverage issues first and start compounding results."
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-32 px-6 bg-white/[0.02] border-y border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="mb-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+          >
+            <div className="max-w-3xl">
+              <motion.h2 variants={fadeInUp} className="mb-6 text-3xl md:text-5xl font-bold text-white font-space">
+                Read the research, then look at your own gap.
+              </motion.h2>
+              <motion.p variants={fadeInUp} className="text-gray-400">
+                We published a first set of research notes so the site has real indexable content and
+                a clearer point of view on where search is going. This is the thinking behind the
+                audits and the retainer.
+              </motion.p>
+            </div>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
+            >
+              See all research
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid gap-8 md:grid-cols-3"
+          >
+            {researchPosts.map((post) => (
+              <motion.article
+                key={post.slug}
+                variants={fadeInUp}
+                className="rounded-3xl border border-white/10 bg-[#0A0A0A] p-8"
+              >
+                <p className="mb-4 text-xs font-mono uppercase tracking-[0.22em] text-zinc-500">
+                  {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+                <h3 className="mb-4 text-2xl font-bold text-white">{post.title}</h3>
+                <p className="mb-6 text-sm leading-relaxed text-gray-400">{post.excerpt}</p>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
+                >
+                  Read article
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </motion.article>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-32 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="mb-16 max-w-3xl"
+          >
+            <motion.h2 variants={fadeInUp} className="mb-6 text-3xl md:text-5xl font-bold text-white font-space">
+              Built to rank beyond the homepage
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-gray-400">
+              We added service and industry pages so the site can compete on more specific buying
+              intent, not just the brand name. That is how this starts turning into a real search
+              surface instead of a single landing page.
+            </motion.p>
+          </motion.div>
+
+          <div className="grid gap-12 lg:grid-cols-2">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+            >
+              <div className="mb-8 flex items-center justify-between gap-4">
+                <div>
+                  <p className="mb-2 text-xs font-mono uppercase tracking-[0.22em] text-green-400">
+                    Service pages
+                  </p>
+                  <h3 className="text-2xl font-bold text-white">What we do</h3>
+                </div>
+                <Link
+                  href="/services"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
+                >
+                  See all
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid gap-4">
+                {servicePages.map((page) => (
+                  <Link
+                    key={page.slug}
+                    href={`/services/${page.slug}`}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+                  >
+                    <h4 className="mb-2 text-lg font-bold text-white">{page.title}</h4>
+                    <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+            >
+              <div className="mb-8 flex items-center justify-between gap-4">
+                <div>
+                  <p className="mb-2 text-xs font-mono uppercase tracking-[0.22em] text-green-400">
+                    Industry pages
+                  </p>
+                  <h3 className="text-2xl font-bold text-white">Who we help</h3>
+                </div>
+                <Link
+                  href="/industries"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
+                >
+                  See all
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid gap-4">
+                {industryPages.map((page) => (
+                  <Link
+                    key={page.slug}
+                    href={`/industries/${page.slug}`}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+                  >
+                    <h4 className="mb-2 text-lg font-bold text-white">{page.title}</h4>
+                    <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
+                  </Link>
+                ))}
+              </div>
             </motion.div>
           </div>
         </div>
@@ -246,17 +560,39 @@ export default function LandingContent() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto bg-gradient-to-b from-white/5 to-transparent p-12 rounded-3xl border border-white/10"
         >
-          <h2 className="text-4xl font-bold text-white mb-6 font-space">Stop being invisible.</h2>
+          <h2 className="text-4xl font-bold text-white mb-6 font-space">Stop spectating. Fix the thing.</h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            Your competitors are still buying backlinks. You can win the new game before they even realize it started.
+            If you have a real business and a website, there is a very good chance your visibility can be materially improved. Start with the audit. If the opportunity is real, we&apos;ll show you why giving us 90 days can materially change how often your business gets found, trusted, and chosen.
           </p>
-          <button 
-             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-             className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)] flex items-center gap-2 mx-auto"
-          >
-            <Zap className="w-5 h-5 fill-black" />
-            Start Free Audit
-          </button>
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link 
+               href="/audit-flow"
+               className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)] flex items-center gap-2"
+            >
+              <Zap className="w-5 h-5 fill-black" />
+              Get your free visibility audit
+            </Link>
+          </div>
+          <p className="mt-5 text-sm text-gray-500">
+            Audit first. Report second. Strategy call when the upside is clear.
+          </p>
+          <div className="mx-auto mt-8 max-w-3xl rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-5 text-left">
+            <p className="text-xs font-mono uppercase tracking-[0.24em] text-zinc-500">
+              Wider Growth Ecosystem
+            </p>
+            <p className="mt-3 text-sm leading-7 text-gray-400">
+              RankUp AEO is part of a wider PanTech Software growth ecosystem built in Kolkata for
+              businesses that need stronger search visibility, sharper positioning, and cleaner
+              customer acquisition systems.
+            </p>
+            <Link
+              href="https://www.pantechsoft.com/ai-marketing-agency-kolkata"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
+            >
+              Explore PanTech Software
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </motion.div>
       </section>
     </div>
@@ -299,5 +635,43 @@ function ComparisonItem({ text, neutral = false }: { text: string, neutral?: boo
       )}
       <span className={neutral ? "text-gray-400" : "text-white"}>{text}</span>
     </li>
+  );
+}
+
+function FaqCard({ question, answer }: { question: string; answer: string }) {
+  return (
+    <motion.div
+      variants={fadeInUp}
+      className="rounded-2xl border border-white/10 bg-white/[0.03] p-8"
+    >
+      <h3 className="mb-4 text-xl font-bold text-white">{question}</h3>
+      <p className="text-sm leading-relaxed text-gray-400">{answer}</p>
+    </motion.div>
+  );
+}
+
+function FunnelStepCard({
+  eyebrow,
+  title,
+  desc,
+  icon,
+}: {
+  eyebrow: string;
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      variants={fadeInUp}
+      className="rounded-2xl border border-white/10 bg-[#0A0A0A] p-8"
+    >
+      <div className="mb-6 flex items-center justify-between">
+        <div className="rounded-xl bg-white/5 p-4">{icon}</div>
+        <span className="text-xs font-mono uppercase tracking-[0.22em] text-zinc-500">{eyebrow}</span>
+      </div>
+      <h3 className="mb-4 text-xl font-bold text-white">{title}</h3>
+      <p className="text-sm leading-relaxed text-gray-400">{desc}</p>
+    </motion.div>
   );
 }
