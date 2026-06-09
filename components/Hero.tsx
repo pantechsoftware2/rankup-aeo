@@ -47,6 +47,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             src="/logo.png" 
             alt="RankUp Logo" 
             fill
+            sizes="160px"
             className="object-contain object-left"
             priority
           />
@@ -55,10 +56,40 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
         {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-6">
           <Link
+            href="/services"
+            className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white lg:inline"
+          >
+            Services
+          </Link>
+          <Link
+            href="/industries"
+            className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white lg:inline"
+          >
+            Industries
+          </Link>
+          <Link
+            href="/about"
+            className="text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white"
+          >
+            About
+          </Link>
+          <Link
+            href="/methodology"
+            className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white sm:inline"
+          >
+            Method
+          </Link>
+          <Link
             href="/blog"
             className="text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white"
           >
-            Research
+            Blog
+          </Link>
+          <Link
+            href="/contact"
+            className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white md:inline"
+          >
+            Contact
           </Link>
           <a
             href="/audit-flow"
@@ -106,7 +137,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           transition={{ delay: 0.4 }}
           className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
         >
-          Most businesses are far less visible on Google and AI answer engines than they think. That is usually not a demand problem. It is a packaging, authority, and search-structure problem. We fix both <span className="text-white font-semibold">SEO and AEO together</span>, then turn the audit into a focused 90-day retainer that starts moving visibility in the right direction.
+          Your business should be getting found on Google and AI answer engines more often. When it is not, that is usually a packaging, authority, and search-structure problem. We fix both <span className="text-white font-semibold">SEO and AEO together</span>, then turn the audit into a focused 90-day retainer that starts moving visibility in the right direction.
         </motion.p>
 
         <motion.div

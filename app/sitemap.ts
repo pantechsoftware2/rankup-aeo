@@ -22,6 +22,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: absoluteUrl('/about'),
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: absoluteUrl('/contact'),
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.65,
+    },
+    {
+      url: absoluteUrl('/methodology'),
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.72,
+    },
+    {
       url: absoluteUrl('/blog'),
       lastModified: now,
       changeFrequency: 'weekly',
@@ -39,12 +57,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.75,
     },
-    {
-      url: absoluteUrl('/feed.xml'),
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.4,
-    },
     ...posts.map((post) => ({
       url: absoluteUrl(`/blog/${post.slug}`),
       lastModified: new Date(post.updatedAt),
@@ -53,7 +65,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     ...landingPages.map((page) => ({
       url: absoluteUrl(`/${page.category === 'service' ? 'services' : 'industries'}/${page.slug}`),
-      lastModified: now,
+      lastModified: page.updatedAt ? new Date(page.updatedAt) : now,
       changeFrequency: 'monthly' as const,
       priority: 0.68,
     })),

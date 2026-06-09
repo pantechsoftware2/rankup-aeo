@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { getAllBlogPosts } from '@/lib/blog';
-import { buildPageMetadata, absoluteUrl } from '@/lib/seo';
+import { buildPageMetadata, absoluteUrl, getBreadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'AEO Research, SEO Strategy, and AI Search Notes',
@@ -20,6 +20,10 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function BlogIndexPage() {
   const posts = getAllBlogPosts();
+  const breadcrumbJsonLd = getBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Research', path: '/blog' },
+  ]);
 
   return (
     <main className="min-h-screen bg-[#050505] px-6 py-24 text-white">
@@ -101,6 +105,10 @@ export default function BlogIndexPage() {
             url: absoluteUrl('/blog'),
           }),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </main>
   );

@@ -82,7 +82,7 @@ export default function LandingContent() {
             <motion.p variants={fadeInUp} className="text-lg text-gray-400 leading-relaxed mb-8">
               Search behavior changed faster than most business websites did. People still discover companies through Google, but now they also ask ChatGPT, Gemini, Perplexity, and AI Overviews to narrow the field before they ever click.
               <br /><br />
-              The hard truth: <strong className="text-white">if your site is weak, vague, or poorly structured, you do not get chosen.</strong> The opportunity is that fixing this is usually far more practical than people assume.
+              The hard truth: if your site is <strong className="text-white">weak, vague, or poorly structured</strong>, you do not get chosen. The opportunity is that fixing this is usually far more practical than people assume.
             </motion.p>
           </motion.div>
 
@@ -94,7 +94,7 @@ export default function LandingContent() {
             className="relative bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm"
           >
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-sm font-mono text-gray-500 uppercase">Discovery Shift</h3>
+              <div className="text-sm font-mono text-gray-500 uppercase">Discovery Shift</div>
               <div className="flex gap-4 text-[10px]">
                 <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-green-500" /> Answer-driven search</div>
                 <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-gray-500" /> Unoptimized sites</div>
@@ -261,7 +261,7 @@ export default function LandingContent() {
             >
               <div className="flex items-center gap-3 mb-8">
                 <Search className="text-gray-500 w-6 h-6" />
-                <h3 className="text-xl font-bold text-gray-300">SEO Foundation</h3>
+                <div className="text-xl font-bold text-gray-300">SEO Foundation</div>
               </div>
               <p className="text-sm text-gray-500 mb-6 font-mono uppercase tracking-widest">What gets you in the consideration set</p>
               <ul className="space-y-6">
@@ -282,7 +282,7 @@ export default function LandingContent() {
               <div className="absolute top-0 left-0 w-full h-1 bg-green-500 shadow-[0_0_20px_#22c55e]" />
               <div className="flex items-center gap-3 mb-8">
                 <Sparkles className="text-green-400 w-6 h-6" />
-                <h3 className="text-xl font-bold text-white">AEO Layer</h3>
+                <div className="text-xl font-bold text-white">AEO Layer</div>
               </div>
               <p className="text-sm text-green-500/70 mb-6 font-mono uppercase tracking-widest">What gets you chosen inside answer engines</p>
               <ul className="space-y-6">
@@ -445,13 +445,14 @@ export default function LandingContent() {
                     year: 'numeric',
                   })}
                 </p>
-                <h3 className="mb-4 text-2xl font-bold text-white">{post.title}</h3>
+                <div className="mb-4 text-2xl font-bold text-white">{post.title}</div>
                 <p className="mb-6 text-sm leading-relaxed text-gray-400">{post.excerpt}</p>
                 <Link
                   href={`/blog/${post.slug}`}
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
                 >
                   Read article
+                  <span className="sr-only"> about {post.keywords[0]}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </motion.article>
@@ -490,26 +491,29 @@ export default function LandingContent() {
                   <p className="mb-2 text-xs font-mono uppercase tracking-[0.22em] text-green-400">
                     Service pages
                   </p>
-                  <h3 className="text-2xl font-bold text-white">What we do</h3>
+                  <div className="text-2xl font-bold text-white">What we do</div>
                 </div>
                 <Link
                   href="/services"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
                 >
                   See all
+                  <span className="sr-only"> services</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
               <div className="grid gap-4">
                 {servicePages.map((page) => (
-                  <Link
+                  <article
                     key={page.slug}
-                    href={`/services/${page.slug}`}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+                    className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
                   >
-                    <h4 className="mb-2 text-lg font-bold text-white">{page.title}</h4>
+                    <Link href={`/services/${page.slug}`} className="absolute inset-0 rounded-2xl">
+                      <span className="sr-only">{page.keywords[0]}</span>
+                    </Link>
+                    <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
                     <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
-                  </Link>
+                  </article>
                 ))}
               </div>
             </motion.div>
@@ -525,26 +529,29 @@ export default function LandingContent() {
                   <p className="mb-2 text-xs font-mono uppercase tracking-[0.22em] text-green-400">
                     Industry pages
                   </p>
-                  <h3 className="text-2xl font-bold text-white">Who we help</h3>
+                  <div className="text-2xl font-bold text-white">Who we help</div>
                 </div>
                 <Link
                   href="/industries"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
                 >
                   See all
+                  <span className="sr-only"> industries</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
               <div className="grid gap-4">
                 {industryPages.map((page) => (
-                  <Link
+                  <article
                     key={page.slug}
-                    href={`/industries/${page.slug}`}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+                    className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
                   >
-                    <h4 className="mb-2 text-lg font-bold text-white">{page.title}</h4>
+                    <Link href={`/industries/${page.slug}`} className="absolute inset-0 rounded-2xl">
+                      <span className="sr-only">{page.keywords[0]}</span>
+                    </Link>
+                    <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
                     <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
-                  </Link>
+                  </article>
                 ))}
               </div>
             </motion.div>
@@ -619,7 +626,7 @@ function ProcessCard({ icon, title, desc, step, color }: any) {
       <div className={`mb-6 p-4 rounded-xl w-fit transition-transform duration-300 group-hover:scale-110 ${colors[color].split(" ")[0]}`}>
         {icon}
       </div>
-      <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
+      <div className="text-xl font-bold text-white mb-4">{title}</div>
       <p className="text-sm text-gray-400 leading-relaxed">{desc}</p>
     </motion.div>
   );
@@ -644,7 +651,7 @@ function FaqCard({ question, answer }: { question: string; answer: string }) {
       variants={fadeInUp}
       className="rounded-2xl border border-white/10 bg-white/[0.03] p-8"
     >
-      <h3 className="mb-4 text-xl font-bold text-white">{question}</h3>
+      <div className="mb-4 text-xl font-bold text-white">{question}</div>
       <p className="text-sm leading-relaxed text-gray-400">{answer}</p>
     </motion.div>
   );
@@ -670,7 +677,7 @@ function FunnelStepCard({
         <div className="rounded-xl bg-white/5 p-4">{icon}</div>
         <span className="text-xs font-mono uppercase tracking-[0.22em] text-zinc-500">{eyebrow}</span>
       </div>
-      <h3 className="mb-4 text-xl font-bold text-white">{title}</h3>
+      <div className="mb-4 text-xl font-bold text-white">{title}</div>
       <p className="text-sm leading-relaxed text-gray-400">{desc}</p>
     </motion.div>
   );

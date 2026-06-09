@@ -3,6 +3,8 @@ import { Analytics } from '@vercel/analytics/next';
 import { Inter, Space_Grotesk } from "next/font/google"; // Import the fonts
 import "./globals.css";
 import { ScanProvider } from "@/lib/scan-context";
+import SiteFooter from "@/components/SiteFooter";
+import SiteNav from "@/components/SiteNav";
 import { getOrganizationJsonLd, getRootMetadata, getWebsiteJsonLd } from "@/lib/seo";
 
 // 1. Configure the fonts
@@ -40,7 +42,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <ScanProvider>
+          <SiteNav />
           {children}
+          <SiteFooter />
         </ScanProvider>
         <Analytics />
       </body>

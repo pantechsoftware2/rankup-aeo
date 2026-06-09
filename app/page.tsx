@@ -1,11 +1,17 @@
 import type { Metadata } from 'next';
 import HomePageClient from '@/components/HomePageClient';
-import { buildPageMetadata, getHomepageFaqJsonLd, getServiceJsonLd } from '@/lib/seo';
+import {
+  buildPageMetadata,
+  getBreadcrumbJsonLd,
+  getHomepageFaqJsonLd,
+  getServiceJsonLd,
+  getWebPageJsonLd,
+} from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'SEO + AEO for Businesses That Need More Google Visibility',
   description:
-    'Run a free audit to see why your business is not getting found on Google and AI answer engines, then request a custom deep report and 90-day SEO + AEO growth plan.',
+    'Run a free SEO and AEO audit to find Google and AI visibility gaps, then request a custom report and 90-day growth plan.',
   path: '/',
   keywords: [
     'SEO audit',
@@ -23,9 +29,20 @@ export const metadata: Metadata = buildPageMetadata({
 export default function HomePage() {
   const serviceJsonLd = getServiceJsonLd();
   const faqJsonLd = getHomepageFaqJsonLd();
+  const pageJsonLd = getWebPageJsonLd({
+    name: 'RankUp AEO',
+    description:
+      'SEO and AEO visibility audits, deep reports, and 90-day retainers for businesses that need stronger Google and AI search discovery.',
+    path: '/',
+  });
+  const breadcrumbJsonLd = getBreadcrumbJsonLd([{ name: 'Home', path: '/' }]);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
@@ -33,6 +50,10 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <HomePageClient />
     </>

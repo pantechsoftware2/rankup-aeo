@@ -34,9 +34,9 @@ export default function OperatorProof() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
           <div className="rounded-3xl bg-white/[0.02] border border-white/5 p-8">
-            <h3 className="text-2xl font-bold text-white mb-4 font-space">
+            <div className="text-2xl font-bold text-white mb-4 font-space">
               Vizly — built by us, ranked by us
-            </h3>
+            </div>
             <p className="text-gray-400 leading-relaxed mb-6">
               Vizly is a creative systems product for B2B and consumer brands. It lives in a
               competitive category alongside design and content tooling that has far bigger budgets
@@ -55,9 +55,9 @@ export default function OperatorProof() {
           </div>
 
           <div className="rounded-3xl bg-white/[0.02] border border-white/5 p-8">
-            <h3 className="text-2xl font-bold text-white mb-6 font-space">
+            <div className="text-2xl font-bold text-white mb-6 font-space">
               What running our own product teaches us
-            </h3>
+            </div>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-gray-300 leading-relaxed">
                 <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0 text-green-400" />

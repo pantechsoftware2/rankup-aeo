@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { getLandingPages } from '@/lib/landing-pages';
-import { absoluteUrl, buildPageMetadata } from '@/lib/seo';
+import { absoluteUrl, buildPageMetadata, getBreadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'SEO and AEO Services',
@@ -14,6 +14,10 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function ServicesIndexPage() {
   const pages = getLandingPages('service');
+  const breadcrumbJsonLd = getBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+  ]);
 
   return (
     <main className="min-h-screen bg-[#050505] px-6 py-24 text-white">
@@ -73,6 +77,10 @@ export default function ServicesIndexPage() {
             url: absoluteUrl('/services'),
           }),
         }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </main>
   );

@@ -6,6 +6,7 @@ export interface LandingFaq {
 export interface LandingPage {
   slug: string;
   category: 'service' | 'industry';
+  updatedAt?: string;
   title: string;
   description: string;
   excerpt: string;
@@ -19,6 +20,22 @@ export interface LandingPage {
   approach: string[];
   faqs: LandingFaq[];
   keywords: string[];
+}
+
+export interface LandingPageDepth {
+  directAnswer: string;
+  whatThisIs: string[];
+  whoFor: string[];
+  problemsSolved: string[];
+  process: string[];
+  deliverables: string[];
+  roadmap?: Array<{ phase: string; details: string }>;
+  searchBehavior?: string[];
+  trustSignals?: string[];
+  aiVisibilityConcerns?: string[];
+  decisionFaqs: LandingFaq[];
+  comparisonQuestions: LandingFaq[];
+  primaryServiceSlug?: string;
 }
 
 const pages: LandingPage[] = [
@@ -390,4 +407,243 @@ export function getLandingPages(category?: LandingPage['category']) {
 
 export function getLandingPage(category: LandingPage['category'], slug: string) {
   return pages.find((page) => page.category === category && page.slug === slug);
+}
+
+const depthBySlug: Record<string, LandingPageDepth> = {
+  'seo-aeo-agency': {
+    directAnswer:
+      'RankUp AEO is an SEO and AEO agency for businesses that need clearer rankings, stronger entity trust, and pages that can be cited by Google AI Overviews, ChatGPT, Gemini, Perplexity, and Bing Copilot.',
+    whatThisIs: [
+      'This service combines technical SEO, page restructuring, schema support, buyer-intent content, and answer-engine readiness into one visibility program. The work starts with the pages that already matter commercially, then improves the surrounding context that helps search systems understand the business.',
+      'The focus is not generic publishing volume. The focus is making the business easier to classify, compare, trust, and recommend when a buyer searches for a category, a problem, or a shortlist.',
+    ],
+    whoFor: [
+      'Founder-led companies, local service businesses, SaaS teams, consultants, agencies, and B2B service firms with a real offer and a website that is not producing enough qualified discovery.',
+      'Teams that know SEO matters but also need their site to be summarized accurately by answer engines and AI-assisted research tools.',
+    ],
+    problemsSolved: [
+      'Important service pages are too vague to rank or cite confidently.',
+      'The site lacks entity clarity, proof, FAQs, and comparison coverage.',
+      'Technical issues, thin pages, or weak internal links make the site harder to crawl and evaluate.',
+      'AI answer engines can describe the category but do not have enough confidence to mention or cite the business.',
+    ],
+    process: [
+      'Audit the crawl, metadata, schema, page intent, content depth, internal links, and authority signals.',
+      'Prioritize commercial pages before supporting content so the highest-value buying journeys improve first.',
+      'Rewrite or expand pages with direct answers, proof, deliverables, FAQs, comparison language, and internal links.',
+      'Measure movement with search visibility, index coverage, page quality, and answer-engine citation checks.',
+    ],
+    deliverables: [
+      'Technical SEO and AEO gap audit.',
+      'Priority-page rewrite and schema recommendations.',
+      'Internal linking map for services, industries, blog, and audit flow.',
+      '90-day implementation roadmap with sequencing by impact.',
+    ],
+    roadmap: [
+      { phase: 'Days 1-30', details: 'Crawl the site, confirm indexable pages, map search intent, fix metadata/schema gaps, and identify the pages most likely to change qualified discovery.' },
+      { phase: 'Days 31-60', details: 'Rebuild priority service and industry pages with deeper answers, decision FAQs, comparison coverage, trust cues, and contextual links.' },
+      { phase: 'Days 61-90', details: 'Expand supporting content, tune internal links, review answer-engine summaries, and refine pages based on early visibility signals.' },
+    ],
+    decisionFaqs: [
+      { question: 'Should we hire RankUp if we already have an SEO vendor?', answer: 'Yes, if the current work is not improving page clarity, trust signals, answer-engine visibility, or commercial-page quality. RankUp can audit the current system and focus on the missing layers.' },
+      { question: 'Will this create fake authority?', answer: 'No. RankUp does not invent reviews, guarantees, clients, or statistics. The work strengthens real information that the business can stand behind.' },
+    ],
+    comparisonQuestions: [
+      { question: 'SEO agency vs AEO agency: what is different?', answer: 'An SEO agency usually focuses on rankings and traffic. An AEO agency also improves how clearly the site can be summarized, cited, and compared by answer engines. RankUp treats those as one connected visibility system.' },
+      { question: 'Audit-only vs retainer: which is better?', answer: 'An audit is best for diagnosis. A retainer is better when the business needs implementation across pages, schema, internal links, and content depth.' },
+    ],
+  },
+  'google-ai-overviews-optimization': {
+    directAnswer:
+      'Google AI Overviews optimization means improving the pages, structure, and proof that help Google understand when your business is a reliable source for answer-led search results.',
+    whatThisIs: [
+      'This service audits the pages most likely to influence AI Overview eligibility and improves them with direct answers, clearer entity language, structured data, internal links, and decision-stage coverage.',
+      'It does not promise placement in AI Overviews. It improves the conditions that make the business easier for Google to understand and safer to cite.',
+    ],
+    whoFor: [
+      'Businesses with commercial pages that rank inconsistently or fail to answer the exact questions buyers ask before contacting them.',
+      'Teams that need their site to explain services, industries, proof, and comparisons clearly enough for both classic search and AI-generated summaries.',
+    ],
+    problemsSolved: [
+      'Pages answer broad topics but miss the concise answer Google can extract.',
+      'Schema exists but is not supported by visible page content.',
+      'FAQs are too generic for decision-stage buyers.',
+      'Internal links do not connect service pages, industry pages, research, and audit CTAs.',
+    ],
+    process: [
+      'Map target queries and pages that could trigger answer-led visibility.',
+      'Compare visible content against metadata, schema, FAQs, and internal links.',
+      'Add direct answer blocks, comparison questions, and proof-backed explanations.',
+      'Review pages for summary quality across AI search tools and Google result behavior.',
+    ],
+    deliverables: [
+      'AI Overview readiness audit.',
+      'Priority page updates for direct answers and structured sections.',
+      'FAQ and comparison question set.',
+      'Internal linking recommendations from service pages to audit flow and related services.',
+    ],
+    roadmap: [
+      { phase: 'Days 1-30', details: 'Identify AI Overview candidate topics, audit current pages, and fix schema/content mismatches.' },
+      { phase: 'Days 31-60', details: 'Expand pages with concise answers, comparison coverage, evidence language, and stronger internal links.' },
+      { phase: 'Days 61-90', details: 'Test AI summaries, improve weak sections, and add supporting blog or industry content where the answer layer needs more context.' },
+    ],
+    decisionFaqs: [
+      { question: 'Can RankUp guarantee Google AI Overview inclusion?', answer: 'No. Google controls the result. RankUp improves crawlability, relevance, answer quality, and trust signals that can support eligibility.' },
+      { question: 'Does this replace technical SEO?', answer: 'No. Technical SEO is part of the work because answer-led visibility still depends on crawlable, indexable, canonical pages.' },
+    ],
+    comparisonQuestions: [
+      { question: 'AI Overview optimization vs featured snippet optimization?', answer: 'Both reward concise answers and trusted structure, but AI Overviews often synthesize multiple sources and need stronger entity clarity, comparison context, and topical support.' },
+      { question: 'Content rewrite vs schema fix?', answer: 'Schema helps machines interpret the page, but it should reflect visible content. When the page is thin, the content needs improvement before schema can carry much weight.' },
+    ],
+  },
+  'chatgpt-visibility-audit': {
+    directAnswer:
+      'A ChatGPT visibility audit checks whether a business is easy for answer engines to identify, summarize, compare, mention, and cite during AI-assisted research.',
+    whatThisIs: [
+      'The audit looks at the owned website first, then the wider entity footprint that may influence how answer engines understand the brand and category.',
+      'It focuses on practical visibility gaps: unclear positioning, missing comparison content, weak proof, thin service pages, and source pages that do not answer buyer questions directly.',
+    ],
+    whoFor: [
+      'Brands that suspect buyers are asking ChatGPT or Perplexity for recommendations, alternatives, or shortlists.',
+      'Businesses that already have search traffic but are unsure whether AI systems can explain why they belong in the conversation.',
+    ],
+    problemsSolved: [
+      'The brand is not clearly tied to a category or use case.',
+      'The site lacks pages that answer comparison and evaluation questions.',
+      'Important claims are unsupported or buried in vague marketing copy.',
+      'Answer engines can mention competitors more easily because their pages are clearer.',
+    ],
+    process: [
+      'Review category positioning, service clarity, and internal page hierarchy.',
+      'Test how the business is summarized across answer-led research prompts.',
+      'Identify owned pages that should become more citeable sources.',
+      'Turn findings into a 90-day action plan for content, structure, schema, and trust.',
+    ],
+    deliverables: [
+      'ChatGPT and answer-engine visibility diagnosis.',
+      'Mention, citation, and comparison gap notes.',
+      'Priority content and schema fixes.',
+      'Recommended internal links and supporting page opportunities.',
+    ],
+    roadmap: [
+      { phase: 'Days 1-30', details: 'Run entity, page, and prompt-based visibility checks and document where the brand is unclear or absent.' },
+      { phase: 'Days 31-60', details: 'Improve the pages that should anchor mentions, citations, comparisons, and buyer questions.' },
+      { phase: 'Days 61-90', details: 'Add supporting research, FAQs, and internal links, then retest summaries and citation behavior.' },
+    ],
+    decisionFaqs: [
+      { question: 'Is this only for ChatGPT Search?', answer: 'No. ChatGPT is the named audit surface, but the same clarity and trust work helps Gemini, Perplexity, Bing Copilot, and Google AI Overviews.' },
+      { question: 'What if the brand is too new to be mentioned?', answer: 'The audit can still identify what owned pages and entity signals need to exist before answer engines have enough reliable material to work with.' },
+    ],
+    comparisonQuestions: [
+      { question: 'Mention visibility vs citation visibility?', answer: 'Mentions mean the brand appears in an answer or comparison. Citations mean the model treats the site as a source. A healthy AEO strategy works on both.' },
+      { question: 'ChatGPT audit vs SEO audit?', answer: 'A ChatGPT audit checks summarization, comparison, and citation readiness. A SEO audit checks rankings, crawlability, and search demand. RankUp connects both because they influence each other.' },
+    ],
+  },
+  'seo-retainer-for-businesses': {
+    directAnswer:
+      'The 90-day SEO retainer is a focused implementation program for businesses that need technical SEO, AEO content improvements, schema cleanup, and priority-page execution in a clear sequence.',
+    whatThisIs: [
+      'This retainer turns the audit into implementation. The first month establishes the baseline and priority map, the second month rebuilds the highest-impact pages, and the third month expands the system so the improvements can compound.',
+      'It is built for execution, not report theater. Each action should connect to crawlability, page quality, trust, search intent, or answer-engine readiness.',
+    ],
+    whoFor: [
+      'Businesses with a website, existing offers, and a clear need for more qualified discovery from Google and AI-assisted search.',
+      'Teams that need a senior SEO/AEO implementation partner for a concentrated sprint rather than vague monthly consulting.',
+    ],
+    problemsSolved: [
+      'The audit identifies issues but nobody fixes them.',
+      'Service pages need rewriting, internal links, schema, and FAQ depth.',
+      'Technical cleanup and content improvements are happening in the wrong order.',
+      'The business needs measurable progress without a long-term lock-in.',
+    ],
+    process: [
+      'Start with a visibility baseline and a prioritized backlog.',
+      'Fix technical and metadata issues that suppress crawlability or clarity.',
+      'Expand priority pages with useful content, direct answers, deliverables, and FAQs.',
+      'Review performance signals and adjust the roadmap based on what is moving.',
+    ],
+    deliverables: [
+      '90-day execution plan.',
+      'Priority metadata, schema, and page structure updates.',
+      'Expanded service, industry, FAQ, and internal linking recommendations.',
+      'Monthly summary of completed work, observed movement, and next actions.',
+    ],
+    roadmap: [
+      { phase: 'Days 1-30', details: 'Baseline crawl/index health, map commercial pages, fix obvious technical gaps, and approve the implementation queue.' },
+      { phase: 'Days 31-60', details: 'Rewrite and expand the highest-impact pages with answer blocks, deliverables, roadmaps, FAQs, schema alignment, and links.' },
+      { phase: 'Days 61-90', details: 'Strengthen supporting pages, tune internal links, review ranking and AI-summary behavior, and define the next sprint.' },
+    ],
+    decisionFaqs: [
+      { question: 'Is there a long-term contract?', answer: 'The visible page states the 90-day retainer starts at $7,500/month with no long-term contract. Exact scope should be quoted after the audit.' },
+      { question: 'What does success look like in 90 days?', answer: 'Success should look like a cleaner visibility system: stronger pages, better crawl signals, clearer schema, richer internal links, and early search or answer-engine movement. Rankings are not guaranteed.' },
+    ],
+    comparisonQuestions: [
+      { question: 'Monthly SEO retainer vs 90-day sprint?', answer: 'A broad monthly retainer can drift. A 90-day sprint forces prioritization around the pages, technical fixes, and content improvements most likely to matter first.' },
+      { question: 'Consulting vs implementation?', answer: 'Consulting explains what to do. Implementation changes the site. This retainer is designed around getting the important work shipped.' },
+    ],
+  },
+  'saas-seo-aeo': {
+    directAnswer:
+      'SaaS SEO and AEO helps software companies clarify category positioning, comparison coverage, use-case pages, and trust signals so buyers and answer engines can understand the product faster.',
+    whatThisIs: ['This industry program improves SaaS pages that influence demos, trials, comparisons, and category discovery. It connects homepage language, feature pages, use cases, alternatives, FAQs, and schema into a clearer search surface.'],
+    whoFor: ['B2B SaaS teams, founder-led software companies, and product-led businesses whose sites look polished but do not rank or explain the category well enough.'],
+    problemsSolved: ['Category language is buried under abstract positioning.', 'Alternative and comparison pages are missing or too thin.', 'Feature pages describe functionality without connecting it to buyer problems.', 'AI systems struggle to summarize who the product is for.'],
+    process: ['Map product categories, use cases, alternatives, and decision-stage queries.', 'Prioritize pages that affect demos, trials, and comparisons.', 'Add concise answers, proof, FAQs, and internal links between services, research, and audit flow.'],
+    deliverables: ['SaaS page architecture recommendations.', 'Use-case and comparison content plan.', 'AEO FAQ and answer block set.', 'Internal links to relevant SEO/AEO services.'],
+    searchBehavior: ['SaaS buyers search by category, pain point, integration, alternative, pricing concern, and comparison.', 'Answer engines compress shortlists, which makes clear positioning and comparison pages more important.'],
+    trustSignals: ['Clear product category, transparent use cases, real integrations or capabilities, security/compliance details when available, and specific buyer outcomes that are visible on the page.'],
+    aiVisibilityConcerns: ['If the product page sounds generic, answer engines may summarize the category but omit the company.', 'Thin comparison pages make competitors easier to recommend.'],
+    decisionFaqs: [{ question: 'Do SaaS companies need AEO if they already publish blog content?', answer: 'Yes. Blog volume does not fix weak category, use-case, feature, and comparison pages. AEO improves the pages answer engines use to summarize shortlists.' }],
+    comparisonQuestions: [{ question: 'SaaS SEO vs SaaS AEO?', answer: 'SaaS SEO improves rankings and organic demand capture. SaaS AEO improves how the product is summarized, compared, and cited inside AI-assisted research.' }],
+    primaryServiceSlug: 'seo-aeo-agency',
+  },
+  'home-services-seo-aeo': {
+    directAnswer:
+      'Home services SEO and AEO improves local service pages, service-area clarity, trust cues, and direct answers so homeowners can find and choose the business faster.',
+    whatThisIs: ['This industry work focuses on high-intent local pages for HVAC, plumbing, roofing, landscaping, electrical, pest control, cleaning, and similar service categories.'],
+    whoFor: ['Local and regional home service businesses that need clearer service pages, stronger local relevance, and a website that supports trust before the call.'],
+    problemsSolved: ['Service pages sound interchangeable with competitors.', 'Locations and service areas are unclear.', 'FAQs do not answer urgency, cost, timing, or trust questions.', 'The site lacks proof that can be verified on the page.'],
+    process: ['Audit service and location structure.', 'Improve pages around concrete services, service areas, emergency intent, and buyer questions.', 'Connect service pages to audit flow and supporting service categories.'],
+    deliverables: ['Local service-page recommendations.', 'Trust and proof gap notes.', 'Decision-stage FAQ set.', 'Internal linking plan for service areas and core offers.'],
+    searchBehavior: ['Homeowners search with urgency, location, price sensitivity, and trust concerns.', 'They often compare providers quickly and need visible proof before calling.'],
+    trustSignals: ['Licensing, service areas, response expectations, before/after examples if real, warranties if already offered, and clear contact paths.'],
+    aiVisibilityConcerns: ['AI summaries may favor clearer local competitors if the site does not explicitly connect service, city, and trust details.', 'Generic copy gives answer engines little to cite.'],
+    decisionFaqs: [{ question: 'Can this improve map rankings?', answer: 'Website improvements can support the broader local visibility system, but map rankings also depend on Google Business Profile quality, proximity, reviews, and local signals outside the site.' }],
+    comparisonQuestions: [{ question: 'Local SEO vs home services AEO?', answer: 'Local SEO improves visibility in local search. AEO makes the service, location, proof, and answers easier for AI systems to summarize and recommend.' }],
+    primaryServiceSlug: 'google-ai-overviews-optimization',
+  },
+  'law-firm-seo-aeo': {
+    directAnswer:
+      'Law firm SEO and AEO strengthens practice-area clarity, local relevance, trust language, and answer-ready content so potential clients can evaluate the firm more confidently.',
+    whatThisIs: ['This industry page is for firms that need clearer practice-area pages, stronger local intent alignment, and content that answers cautious legal buyers without making improper promises.'],
+    whoFor: ['Small and mid-sized law firms, boutique practices, and local firms whose websites need stronger discoverability and trust before the first consultation.'],
+    problemsSolved: ['Practice area pages are generic.', 'Local relevance is weak or inconsistent.', 'Trust content is thin, vague, or disconnected from visible credentials.', 'AI systems cannot confidently describe the firm by practice area and location.'],
+    process: ['Audit practice-area and location pages.', 'Improve plain-English answers, service boundaries, internal links, and structured data alignment.', 'Add decision-stage FAQs without guaranteeing legal outcomes.'],
+    deliverables: ['Practice-area SEO/AEO audit.', 'Local relevance and internal-link recommendations.', 'Trust and credential content checklist.', 'FAQ and comparison question set.'],
+    searchBehavior: ['Legal buyers search with urgency, risk, location, and practice-area specificity.', 'They often need plain answers before they are ready to contact a firm.'],
+    trustSignals: ['Visible practice areas, attorney credentials if available, jurisdictions served, clear consultation paths, and careful language that avoids guarantees.'],
+    aiVisibilityConcerns: ['Legal pages need extra clarity because vague or unsupported claims are risky for users and harder for answer engines to trust.', 'Thin boilerplate makes firms look interchangeable.'],
+    decisionFaqs: [{ question: 'Will RankUp write legal advice?', answer: 'No. Page content should explain services and process in plain language, but legal advice and jurisdiction-specific claims must be reviewed by the firm.' }],
+    comparisonQuestions: [{ question: 'Law firm SEO vs legal content marketing?', answer: 'SEO improves discoverability and technical/page quality. Content marketing may support awareness. For law firms, the priority is often high-intent practice pages first.' }],
+    primaryServiceSlug: 'chatgpt-visibility-audit',
+  },
+  'b2b-services-seo-aeo': {
+    directAnswer:
+      'B2B services SEO and AEO clarifies offers, buyer problems, proof, and decision-stage content so service firms stop sounding interchangeable in search and AI summaries.',
+    whatThisIs: ['This industry program improves the pages that explain what the firm does, who it helps, how it works, and why a buyer should trust it.'],
+    whoFor: ['Consultancies, agencies, fractional teams, professional services, and B2B firms that sell expertise through their website.'],
+    problemsSolved: ['Service pages are polished but vague.', 'Offers are not mapped to buyer problems.', 'Proof is missing or too abstract.', 'AI answer engines summarize the category but not the firm.'],
+    process: ['Clarify service taxonomy and buyer intent.', 'Rewrite pages with direct answers, deliverables, process, and internal links.', 'Add FAQs and comparison coverage for evaluation-stage buyers.'],
+    deliverables: ['B2B service-page audit.', 'Offer and internal-link map.', 'Decision-stage FAQ set.', 'Service-to-industry content recommendations.'],
+    searchBehavior: ['B2B buyers search by problem, service category, specialization, industry fit, and comparison.', 'They need enough specificity to shortlist the firm before a call.'],
+    trustSignals: ['Clear services, concrete deliverables, team expertise when available, methodology, relevant industries, and transparent process language.'],
+    aiVisibilityConcerns: ['Generic expertise language is hard to cite.', 'If the page does not state the offer directly, AI systems may classify the firm incorrectly.'],
+    decisionFaqs: [{ question: 'Does this work without public case studies?', answer: 'Yes, but the site still needs real proof such as process clarity, deliverables, expertise, methodology, examples that can be shared, or other verifiable trust signals.' }],
+    comparisonQuestions: [{ question: 'B2B SEO vs lead generation?', answer: 'SEO builds qualified discovery through search surfaces. Lead generation often starts outbound or paid. Strong SEO/AEO makes inbound evaluation easier and can support both.' }],
+    primaryServiceSlug: 'seo-retainer-for-businesses',
+  },
+};
+
+export function getLandingPageDepth(slug: string) {
+  return depthBySlug[slug];
 }

@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getAllBlogPosts, getBlogPost } from '@/lib/blog';
-import { absoluteUrl } from '@/lib/seo';
+import { getLandingPages } from '@/lib/landing-pages';
+import { absoluteUrl, getArticleJsonLd, getBreadcrumbJsonLd, getDefaultOgImage } from '@/lib/seo';
 
 export function generateStaticParams() {
   return getAllBlogPosts().map((post) => ({ slug: post.slug }));
@@ -21,6 +22,7 @@ export function generateMetadata({
   }
 
   const url = absoluteUrl(`/blog/${post.slug}`);
+  const ogImage = getDefaultOgImage();
 
   return {
     title: post.title,
@@ -37,11 +39,13 @@ export function generateMetadata({
       siteName: 'RankUp AEO',
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt,
+      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.description,
+      images: [ogImage.url],
     },
   };
 }
@@ -57,28 +61,22 @@ export default function BlogPostPage({
     notFound();
   }
 
-  const url = absoluteUrl(`/blog/${post.slug}`);
-  const articleJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
+  const relatedServices = getLandingPages('service').slice(0, 3);
+  const breadcrumbJsonLd = getBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Research', path: '/blog' },
+    { name: post.title, path: `/blog/${post.slug}` },
+  ]);
+  const articleJsonLd = getArticleJsonLd({
     headline: post.title,
     description: post.description,
+    path: `/blog/${post.slug}`,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
-    mainEntityOfPage: url,
-    author: {
-      '@type': 'Organization',
-      name: 'RankUp AEO',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'RankUp AEO',
-      logo: {
-        '@type': 'ImageObject',
-        url: absoluteUrl('/logo.png'),
-      },
-    },
-  };
+    image: getDefaultOgImage().url,
+    citations: post.sources.map((source) => source.url),
+    keywords: post.keywords,
+  });
 
   return (
     <main className="min-h-screen bg-[#050505] px-6 py-24 text-white">
@@ -161,6 +159,26 @@ export default function BlogPostPage({
           </ul>
         </section>
 
+        <section className="mt-16 rounded-3xl border border-white/10 bg-white/[0.03] p-8">
+          <h2 className="mb-5 text-2xl font-bold">Service pages related to this article</h2>
+          <div className="grid gap-5 md:grid-cols-3">
+            {relatedServices.map((service) => (
+              <Link
+                key={service.slug}
+                href={`/services/${service.slug}`}
+                className="rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:border-white/20 hover:bg-white/[0.05]"
+              >
+                <h3 className="text-base font-bold text-white">{service.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-gray-400">{service.excerpt}</p>
+                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-green-300">
+                  View service
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section className="mt-16 rounded-3xl border border-white/10 bg-gradient-to-b from-white/5 to-transparent p-10">
           <h2 className="mb-4 text-3xl font-bold font-space">Now look at your own site.</h2>
           <p className="max-w-2xl text-gray-400">
@@ -180,6 +198,10 @@ export default function BlogPostPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </main>
   );

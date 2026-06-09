@@ -2,37 +2,52 @@ import type { MetadataRoute } from 'next';
 import { absoluteUrl } from '@/lib/seo';
 
 export default function robots(): MetadataRoute.Robots {
+  const disallow = [
+    '/api/*',
+    '/review',
+    '/review/*',
+    '/report-preview',
+    '/report-preview/*',
+    '/onboarding',
+    '/onboarding/*',
+  ];
+
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/review', '/review/', '/report-preview', '/onboarding'],
-      },
-      {
-        userAgent: 'OAI-SearchBot',
-        allow: '/',
-        disallow: ['/api/', '/review', '/review/', '/report-preview', '/onboarding'],
-      },
-      {
-        userAgent: 'ChatGPT-User',
-        allow: '/',
-        disallow: ['/api/', '/review', '/review/', '/report-preview', '/onboarding'],
-      },
-      {
-        userAgent: 'PerplexityBot',
-        allow: '/',
-        disallow: ['/api/', '/review', '/review/', '/report-preview', '/onboarding'],
+        disallow,
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/api/', '/review', '/review/', '/report-preview', '/onboarding'],
+        disallow,
       },
       {
-        userAgent: 'Google-Extended',
+        userAgent: 'Bingbot',
         allow: '/',
-        disallow: ['/api/', '/review', '/review/', '/report-preview', '/onboarding'],
+        disallow,
+      },
+      {
+        userAgent: 'OAI-SearchBot',
+        allow: '/',
+        disallow,
+      },
+      {
+        userAgent: 'PerplexityBot',
+        allow: '/',
+        disallow,
+      },
+      {
+        userAgent: 'GPTBot',
+        allow: '/',
+        disallow,
+      },
+      {
+        userAgent: 'ChatGPT-User',
+        allow: '/',
+        disallow,
       },
     ],
     sitemap: absoluteUrl('/sitemap.xml'),
