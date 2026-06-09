@@ -1,10 +1,13 @@
 import { mkdir, readFile, readdir, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import type { DeepReportJob, ReportJobStatus } from '@/types/consulting-report';
 
-const STORAGE_ROOT = process.env.REPORT_JOB_STORAGE_DIR?.trim() || path.join(process.cwd(), '.report-jobs');
+const STORAGE_ROOT =
+  process.env.REPORT_JOB_STORAGE_DIR?.trim() ||
+  path.join(process.env.VERCEL ? tmpdir() : process.cwd(), '.report-jobs');
 const JOBS_TABLE = 'deep_report_jobs';
 
 function getJobFilePath(id: string) {
@@ -85,11 +88,15 @@ export async function createDeepReportJob(input: Omit<DeepReportJob, 'id' | 'cre
 
   const supabase = getSupabaseAdmin();
   if (supabase) {
-    const { error } = await supabase.from(JOBS_TABLE).insert(toRow(job));
-    if (error) {
-      throw new Error(`Supabase insert failed: ${error.message}`);
+    try {
+      const { error } = await supabase.from(JOBS_TABLE).insert(toRow(job));
+      if (!error) {
+        return job;
+      }
+      console.error(`Supabase insert failed: ${error.message}`);
+    } catch (error) {
+      console.error('Supabase insert failed:', error);
     }
-    return job;
   }
 
   await ensureStorageDir();

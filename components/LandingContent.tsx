@@ -113,7 +113,7 @@ export default function LandingContent() {
                   variants={graphLine}
                 />
                 <motion.path 
-                  d="M0,180 C50,170 150,200 300,220 400,240 500,250" 
+                  d="M0,180 C50,170 150,200 300,220 S400,240 500,250" 
                   fill="none" 
                   stroke="#6b7280" 
                   strokeWidth="2" 

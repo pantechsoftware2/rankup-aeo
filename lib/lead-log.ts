@@ -1,9 +1,12 @@
 import { mkdir, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
-const STORAGE_ROOT = process.env.LEAD_LOG_STORAGE_DIR?.trim() || path.join(process.cwd(), '.lead-logs');
+const STORAGE_ROOT =
+  process.env.LEAD_LOG_STORAGE_DIR?.trim() ||
+  path.join(process.env.VERCEL ? tmpdir() : process.cwd(), '.lead-logs');
 const LEAD_LOGS_TABLE = 'lead_logs';
 
 export async function writeLeadLog(type: string, payload: Record<string, unknown>) {
@@ -15,16 +18,20 @@ export async function writeLeadLog(type: string, payload: Record<string, unknown
 
   const supabase = getSupabaseAdmin();
   if (supabase) {
-    const { error } = await supabase.from(LEAD_LOGS_TABLE).insert({
-      type,
-      logged_at: entry.loggedAt,
-      payload: entry,
-    });
+    try {
+      const { error } = await supabase.from(LEAD_LOGS_TABLE).insert({
+        type,
+        logged_at: entry.loggedAt,
+        payload: entry,
+      });
 
-    if (error) {
-      throw new Error(`Supabase lead log insert failed: ${error.message}`);
+      if (!error) {
+        return;
+      }
+      console.error(`Supabase lead log insert failed: ${error.message}`);
+    } catch (error) {
+      console.error('Supabase lead log insert failed:', error);
     }
-    return;
   }
 
   await mkdir(STORAGE_ROOT, { recursive: true });
