@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, AlertCircle, Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -10,6 +10,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
   const [url, setUrl] = useState('');
   const [touched, setTouched] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   // Regex: matches "text" + "." + "2+ letters" (e.g. .com, .ai, .co)
   const isValidDomain = (input: string) => {
     // Strip http/https/www for the check if needed, but simple regex works for user input
@@ -37,12 +38,12 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
   };
 
   return (
-    <div className="relative w-full min-h-[90vh] flex flex-col items-center justify-center overflow-hidden bg-[#050505]">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#050505]">
       
       {/* --- NAVIGATION BAR --- */}
-      <nav className="absolute top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center max-w-7xl mx-auto">
+      <nav className="absolute inset-x-0 top-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
         {/* LOGO SECTION */}
-        <div className="relative w-40 h-12 transition-transform hover:scale-105 cursor-pointer">
+        <Link href="/" className="relative h-10 w-28 cursor-pointer transition-transform hover:scale-105 sm:h-12 sm:w-40">
           <Image 
             src="/logo.png" 
             alt="RankUp Logo" 
@@ -51,10 +52,10 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             className="object-contain object-left"
             priority
           />
-        </div>
+        </Link>
 
         {/* RIGHT ACTIONS */}
-        <div className="flex items-center gap-6">
+        <div className="hidden items-center gap-6 md:flex">
           <Link
             href="/services"
             className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white lg:inline"
@@ -99,6 +100,47 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </a>
         </div>
+        <div className="flex items-center gap-2 md:hidden">
+          <Link
+            href="/audit-flow"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-black transition hover:bg-gray-200"
+          >
+            Get audit
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+          <button
+            type="button"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+        {menuOpen ? (
+          <div className="absolute left-4 right-4 top-20 rounded-2xl border border-white/10 bg-[#080808]/95 p-4 shadow-2xl backdrop-blur md:hidden">
+            <div className="grid gap-1 text-sm font-bold uppercase tracking-wider text-zinc-300">
+              {[
+                ['Services', '/services'],
+                ['Industries', '/industries'],
+                ['About', '/about'],
+                ['Method', '/methodology'],
+                ['Blog', '/blog'],
+                ['Contact', '/contact'],
+              ].map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </nav>
 
       {/* --- BACKGROUND EFFECTS --- */}
@@ -106,14 +148,14 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
       <div className="absolute top-0 w-full h-[1px] bg-gradient-to-r from-transparent via-green-500/20 to-transparent"></div>
 
       {/* --- HERO CONTENT --- */}
-      <div className="relative z-10 max-w-4xl px-6 text-center mt-20">
+      <div className="relative z-10 mt-24 w-full max-w-4xl px-4 text-center sm:px-6">
         
         {/* Animated Badge */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-widest text-green-400 mb-8"
+          className="mb-8 inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-center font-mono text-[10px] uppercase tracking-widest text-green-400"
         >
           <Sparkles className="w-3 h-3" />
           SEO + AEO Visibility Audit
@@ -124,9 +166,9 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight font-space"
+          className="mb-6 font-space text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-7xl"
         >
-          Your business should be <br />
+          Your business should be{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800">getting found on Google.</span>
         </motion.h1>
 
@@ -135,7 +177,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
+          className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg md:mb-12 md:text-xl"
         >
           Your business should be getting found on Google and AI answer engines more often. When it is not, that is usually a packaging, authority, and search-structure problem. We fix both <span className="text-white font-semibold">SEO and AEO together</span>, then turn the audit into a focused 90-day retainer that starts moving visibility in the right direction.
         </motion.p>
@@ -146,20 +188,20 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           transition={{ delay: 0.45 }}
           className="mb-10 flex flex-wrap justify-center gap-3 text-[11px] font-mono uppercase tracking-wider text-zinc-300"
         >
-          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Google rankings</div>
-          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">AI answer visibility</div>
-          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">90-day retainer rollout</div>
+          <div className="max-w-full rounded-full border border-white/10 bg-white/5 px-4 py-2">Google rankings</div>
+          <div className="max-w-full rounded-full border border-white/10 bg-white/5 px-4 py-2">AI answer visibility</div>
+          <div className="max-w-full rounded-full border border-white/10 bg-white/5 px-4 py-2">90-day retainer rollout</div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.48 }}
-          className="mb-8 flex flex-wrap justify-center gap-3 text-[10px] font-mono uppercase tracking-[0.22em] text-zinc-500"
+          className="mb-8 flex flex-wrap justify-center gap-3 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500 sm:tracking-[0.22em]"
         >
-          <div className="rounded-full border border-white/10 px-4 py-2">1. Get your free visibility audit</div>
-          <div className="rounded-full border border-white/10 px-4 py-2">2. Unlock report</div>
-          <div className="rounded-full border border-white/10 px-4 py-2">3. Book strategy call</div>
+          <div className="max-w-full rounded-full border border-white/10 px-4 py-2">1. Get your free visibility audit</div>
+          <div className="max-w-full rounded-full border border-white/10 px-4 py-2">2. Unlock report</div>
+          <div className="max-w-full rounded-full border border-white/10 px-4 py-2">3. Book strategy call</div>
         </motion.div>
 
         {/* Input Box Area */}
@@ -167,12 +209,12 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }} 
-          className="max-w-lg mx-auto"
+          className="mx-auto w-full max-w-lg"
         >
           <form onSubmit={handleSubmit} className="relative group mb-3">
             <div className={`absolute -inset-1 bg-gradient-to-r ${isInvalid ? 'from-red-500/50 to-red-900/50' : 'from-green-500 to-emerald-600'} rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000`}></div>
             
-            <div className={`relative flex items-center bg-[#0A0A0A] border ${isInvalid && touched ? 'border-red-500/50' : 'border-white/10'} rounded-xl p-2 shadow-2xl transition-colors`}>
+            <div className={`relative flex flex-col items-stretch gap-2 bg-[#0A0A0A] border ${isInvalid && touched ? 'border-red-500/50' : 'border-white/10'} rounded-xl p-2 shadow-2xl transition-colors sm:flex-row sm:items-center`}>
               <input 
                 type="text" 
                 placeholder="e.g. stayiq.ai" 
@@ -181,12 +223,12 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
                   setUrl(e.target.value);
                   if (touched) setTouched(false);
                 }}
-                className="flex-1 bg-transparent border-none outline-none text-white px-4 py-3 placeholder:text-gray-600 font-mono text-sm focus:ring-0"
+                className="min-w-0 flex-1 border-none bg-transparent px-4 py-3 font-mono text-sm text-white outline-none placeholder:text-gray-600 focus:ring-0"
               />
               <button 
                 type="submit"
                 disabled={!isValidDomain(url) || isSubmitting}
-                className={`px-6 py-3 rounded-lg font-bold text-xs md:text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${isSubmitting ? 'bg-emerald-500 text-white cursor-wait shadow-md' : 'bg-white text-black hover:bg-gray-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`flex w-full items-center justify-center gap-2 rounded-lg px-5 py-3 text-xs font-bold transition-colors sm:w-auto sm:whitespace-nowrap md:text-sm ${isSubmitting ? 'bg-emerald-500 text-white cursor-wait shadow-md' : 'bg-white text-black hover:bg-gray-200'} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isSubmitting ? 'SCANNING…' : 'GET YOUR FREE VISIBILITY AUDIT'}
               </button>
@@ -194,18 +236,18 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           </form>
 
           {/* Validation & Trust Micro-Copy */}
-          <div className="h-6 flex items-center justify-center gap-2 text-[10px] md:text-xs font-mono">
+          <div className="flex min-h-6 items-center justify-center gap-2 text-[10px] font-mono md:text-xs">
             {isInvalid && url.length > 0 ? (
               <motion.div 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
-                className="text-red-400 flex items-center gap-2"
+                className="flex items-center gap-2 text-red-400"
               >
                 <AlertCircle className="w-3 h-3" />
                 Please enter a valid domain (e.g., .com, .ai)
               </motion.div>
             ) : (
-              <div className="text-gray-500 flex items-center gap-2">
+              <div className="flex items-start gap-2 text-gray-500 sm:items-center">
                 <CheckCircle2 className="w-3 h-3 text-green-500" />
                 <span>Free teaser now. Custom report after review. If it&apos;s a fit, we&apos;ll show where a 3-month retainer changes the game.</span>
               </div>
@@ -219,7 +261,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-16 flex justify-center gap-8 opacity-30 grayscale"
+          className="mt-16 flex flex-wrap justify-center gap-4 opacity-30 grayscale sm:gap-8"
         >
            <span className="text-xs font-mono font-bold text-white">VISIBILITY ACROSS:</span>
            <span className="text-xs font-mono text-white">CHATGPT</span>
