@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, CheckCircle2, AlertCircle, Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { AlertCircleIcon, ArrowRightIcon, CheckCircleIcon, MenuIcon, SparklesIcon, XIcon } from '@/components/InlineIcons';
 
 export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promise<void> }) {
   const [url, setUrl] = useState('');
@@ -97,16 +96,17 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all hover:scale-105 flex items-center gap-2 group"
           >
             Get audit
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+            <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </a>
         </div>
         <div className="flex items-center gap-2 md:hidden">
           <Link
             href="/audit-flow"
+            prefetch={false}
             className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-black transition hover:bg-gray-200"
           >
             Get audit
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRightIcon className="h-3 w-3" />
           </Link>
           <button
             type="button"
@@ -115,7 +115,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             onClick={() => setMenuOpen((open) => !open)}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {menuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
         </div>
         {menuOpen ? (
@@ -151,64 +151,46 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
       <div className="relative z-10 mt-24 w-full max-w-4xl px-4 text-center sm:px-6">
         
         {/* Animated Badge */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+        <div 
           className="mb-8 inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-center font-mono text-[10px] uppercase tracking-widest text-green-400"
         >
-          <Sparkles className="w-3 h-3" />
+          <SparklesIcon className="w-3 h-3" />
           SEO + AEO Visibility Audit
-        </motion.div>
+        </div>
 
         {/* Headline */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+        <h1 
           className="mb-6 font-space text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-7xl"
         >
           Your business should be{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-800">getting found on Google.</span>
-        </motion.h1>
+        </h1>
 
         {/* Subhead */}
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+        <p 
           className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-gray-400 sm:text-lg md:mb-12 md:text-xl"
         >
           Your business should be getting found on Google and AI answer engines more often. When it is not, that is usually a packaging, authority, and search-structure problem. We fix both <span className="text-white font-semibold">SEO and AEO together</span>, then turn the audit into a focused 90-day retainer that starts moving visibility in the right direction.
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
+        <div
           className="mb-10 flex flex-wrap justify-center gap-3 text-[11px] font-mono uppercase tracking-wider text-zinc-300"
         >
           <div className="max-w-full rounded-full border border-white/10 bg-white/5 px-4 py-2">Google rankings</div>
           <div className="max-w-full rounded-full border border-white/10 bg-white/5 px-4 py-2">AI answer visibility</div>
           <div className="max-w-full rounded-full border border-white/10 bg-white/5 px-4 py-2">90-day retainer rollout</div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.48 }}
+        <div
           className="mb-8 flex flex-wrap justify-center gap-3 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500 sm:tracking-[0.22em]"
         >
           <div className="max-w-full rounded-full border border-white/10 px-4 py-2">1. Get your free visibility audit</div>
           <div className="max-w-full rounded-full border border-white/10 px-4 py-2">2. Unlock report</div>
           <div className="max-w-full rounded-full border border-white/10 px-4 py-2">3. Book strategy call</div>
-        </motion.div>
+        </div>
 
         {/* Input Box Area */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }} 
+        <div
           className="mx-auto w-full max-w-lg"
         >
           <form onSubmit={handleSubmit} className="relative group mb-3">
@@ -238,29 +220,24 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
           {/* Validation & Trust Micro-Copy */}
           <div className="flex min-h-6 items-center justify-center gap-2 text-[10px] font-mono md:text-xs">
             {isInvalid && url.length > 0 ? (
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <div 
                 className="flex items-center gap-2 text-red-400"
               >
-                <AlertCircle className="w-3 h-3" />
+                <AlertCircleIcon className="w-3 h-3" />
                 Please enter a valid domain (e.g., .com, .ai)
-              </motion.div>
+              </div>
             ) : (
               <div className="flex items-start gap-2 text-gray-500 sm:items-center">
-                <CheckCircle2 className="w-3 h-3 text-green-500" />
+                <CheckCircleIcon className="w-3 h-3 text-green-500" />
                 <span>Free teaser now. Custom report after review. If it&apos;s a fit, we&apos;ll show where a 3-month retainer changes the game.</span>
               </div>
             )}
           </div>
 
-        </motion.div>
+        </div>
 
         {/* Footer Trust Signals */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
+        <div 
           className="mt-16 flex flex-wrap justify-center gap-4 opacity-30 grayscale sm:gap-8"
         >
            <span className="text-xs font-mono font-bold text-white">VISIBILITY ACROSS:</span>
@@ -268,7 +245,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
            <span className="text-xs font-mono text-white">GEMINI</span>
            <span className="text-xs font-mono text-white">PERPLEXITY</span>
            <span className="text-xs font-mono text-white">GOOGLE</span>
-        </motion.div>
+        </div>
 
       </div>
     </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import HomePageClient from '@/components/HomePageClient';
+import LandingContent from '@/components/LandingContent';
 import {
   buildPageMetadata,
   getBreadcrumbJsonLd,
@@ -55,7 +56,12 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <HomePageClient />
+      <main className="min-h-screen bg-[#050505] text-white selection:bg-green-500/30">
+        <div className="relative z-0">
+          <HomePageClient />
+          <LandingContent />
+        </div>
+      </main>
     </>
   );
 }

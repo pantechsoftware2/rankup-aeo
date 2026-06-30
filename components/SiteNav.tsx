@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowRightIcon, MenuIcon, XIcon } from '@/components/InlineIcons';
 
 const links = [
   { href: '/services', label: 'Services' },
@@ -36,19 +36,21 @@ export default function SiteNav() {
           ))}
           <Link
             href="/audit-flow"
+            prefetch={false}
             className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:scale-105"
           >
             Get audit
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRightIcon className="h-3 w-3" />
           </Link>
         </div>
         <div className="flex items-center gap-2 md:hidden">
           <Link
             href="/audit-flow"
+            prefetch={false}
             className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-black transition hover:bg-gray-200"
           >
             Get audit
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRightIcon className="h-3 w-3" />
           </Link>
           <button
             type="button"
@@ -57,7 +59,7 @@ export default function SiteNav() {
             onClick={() => setMenuOpen((open) => !open)}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {menuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
         </div>
         {menuOpen ? (
