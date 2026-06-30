@@ -15,6 +15,7 @@ export interface OnboardingIntakePayload {
 interface OnboardingIntakeProps {
   onSubmit?: (payload: OnboardingIntakePayload) => void | Promise<void>;
   isSubmitting?: boolean;
+  headingAs?: 'h1' | 'h2';
 }
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -23,6 +24,7 @@ const isLikelyValidPhone = (phone: string) => phone.replace(/\D/g, '').length >=
 export default function OnboardingIntake({
   onSubmit: onSubmitCallback,
   isSubmitting: externalIsSubmitting,
+  headingAs: Heading = 'h1',
 }: OnboardingIntakeProps) {
   const [prompts, setPrompts] = useState<string[]>(Array(10).fill(''));
   const [contact, setContact] = useState({
@@ -117,9 +119,9 @@ export default function OnboardingIntake({
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-bold text-white font-space mb-4">
+        <Heading className="text-4xl md:text-5xl font-bold text-white font-space mb-4">
           Request Your Custom Report
-        </h1>
+        </Heading>
 
         <p className="text-gray-400 text-lg max-w-3xl mx-auto mb-6">
           Tell us who to send the report to, how to reach you fast, and which prompts matter most.

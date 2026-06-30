@@ -25,7 +25,9 @@ export function generateMetadata({
   const ogImage = getDefaultOgImage();
 
   return {
-    title: post.title,
+    title: {
+      absolute: post.title,
+    },
     description: post.description,
     keywords: post.keywords,
     alternates: {

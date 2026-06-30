@@ -10,7 +10,7 @@ import {
 export const metadata: Metadata = buildPageMetadata({
   title: 'About RankUp AEO',
   description:
-    'RankUp AEO helps businesses improve Google visibility, answer-engine readiness, and qualified discovery through SEO, AEO, technical cleanup, and proof-led content.',
+    'RankUp AEO helps businesses improve Google visibility, AI readiness, and qualified discovery with SEO, AEO, technical fixes, and proof-led content.',
   path: '/about',
   keywords: ['about RankUp AEO', 'SEO AEO agency', 'answer engine optimization team'],
 });

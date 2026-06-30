@@ -220,6 +220,7 @@ export default function AuditConversionFlow() {
                   <OnboardingIntake
                     onSubmit={handleOnboardingSubmit}
                     isSubmitting={isSubmitting}
+                    headingAs="h2"
                   />
                 </motion.section>
 

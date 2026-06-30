@@ -199,7 +199,7 @@ const posts: BlogPost[] = [
     slug: 'mentions-are-not-the-win-citations-are',
     title: 'Mentions Are Not the Win. Citations Are.',
     description:
-      'What the latest AI visibility research says about the gap between being talked about and being trusted, and why most brands only optimize half the problem.',
+      'What AI visibility research says about the gap between being talked about and being trusted, and why most brands optimize only half the problem.',
     excerpt:
       'If the model mentions you in comparisons but never trusts your site as a source, you are still leaving money on the table.',
     publishedAt: '2026-03-24T13:00:00.000Z',

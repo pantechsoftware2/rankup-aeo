@@ -30,15 +30,17 @@ export function generateMetadata({
   const ogImage = getDefaultOgImage();
 
   return {
-    title: page.title,
-    description: page.description,
+    title: {
+      absolute: page.metaTitle || page.title,
+    },
+    description: page.metaDescription || page.description,
     keywords: page.keywords,
     alternates: {
       canonical: url,
     },
     openGraph: {
-      title: page.title,
-      description: page.description,
+      title: page.metaTitle || page.title,
+      description: page.metaDescription || page.description,
       url,
       siteName: 'RankUp AEO',
       type: 'website',
@@ -46,8 +48,8 @@ export function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: page.title,
-      description: page.description,
+      title: page.metaTitle || page.title,
+      description: page.metaDescription || page.description,
       images: [ogImage.url],
     },
   };

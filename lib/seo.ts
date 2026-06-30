@@ -45,7 +45,9 @@ export function buildPageMetadata(input: {
   const canonical = absoluteUrl(input.path || '/');
 
   return {
-    title: input.title,
+    title: {
+      absolute: input.title,
+    },
     description: input.description,
     keywords: input.keywords,
     alternates: {

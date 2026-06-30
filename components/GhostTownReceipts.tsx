@@ -23,7 +23,7 @@ export default function GhostTownReceipts({ data }: GhostTownReceiptsProps) {
             <ShieldAlert className="w-8 h-8 text-red-500" />
           </div>
           
-          <h1 className="text-3xl font-bold text-white mb-2">Ghost Town Detected</h1>
+          <h2 className="text-3xl font-bold text-white mb-2">Ghost Town Detected</h2>
           <p className="text-zinc-400 max-w-md mx-auto">
             We audited <strong>{totalSources} sources</strong>, but your brand is invisible to AI models because you lack human-to-human discussion signals.
           </p>

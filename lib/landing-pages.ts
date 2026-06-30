@@ -7,6 +7,8 @@ export interface LandingPage {
   slug: string;
   category: 'service' | 'industry';
   updatedAt?: string;
+  metaTitle?: string;
+  metaDescription?: string;
   title: string;
   description: string;
   excerpt: string;
@@ -42,6 +44,7 @@ const pages: LandingPage[] = [
   {
     slug: 'seo-aeo-agency',
     category: 'service',
+    metaTitle: 'SEO and AEO Agency for Qualified Discovery',
     title: 'SEO and AEO Agency for Businesses That Need More Qualified Discovery',
     description:
       'RankUp is an SEO and AEO agency that helps businesses improve Google visibility, answer engine citations, and revenue-driving discoverability.',
@@ -87,6 +90,7 @@ const pages: LandingPage[] = [
   {
     slug: 'google-ai-overviews-optimization',
     category: 'service',
+    metaTitle: 'Google AI Overviews Optimization',
     title: 'Google AI Overviews Optimization for Businesses That Need to Be Chosen',
     description:
       'Improve how your business appears in Google AI Overviews by strengthening page structure, trust, and citeable content.',
@@ -132,6 +136,7 @@ const pages: LandingPage[] = [
   {
     slug: 'chatgpt-visibility-audit',
     category: 'service',
+    metaTitle: 'ChatGPT Visibility Audit for Brands',
     title: 'ChatGPT Visibility Audit for Brands That Want to Be Mentioned and Cited',
     description:
       'Run a ChatGPT visibility audit to see how your business is positioned for discovery, comparison, and citations inside answer engines.',
@@ -177,6 +182,7 @@ const pages: LandingPage[] = [
   {
     slug: 'seo-retainer-for-businesses',
     category: 'service',
+    metaTitle: '90-Day SEO Retainer for Businesses',
     title: '90-Day SEO Retainer for Businesses That Need Measurable Movement',
     description:
       'A focused SEO and AEO retainer for businesses that need concentrated execution instead of generic monthly reporting.',
@@ -222,6 +228,7 @@ const pages: LandingPage[] = [
   {
     slug: 'saas-seo-aeo',
     category: 'industry',
+    metaTitle: 'SEO and AEO for SaaS Companies',
     title: 'SEO and AEO for SaaS Companies That Need Better Category Discovery',
     description:
       'SEO and AEO for SaaS companies that need stronger Google rankings, better comparison visibility, and more trustworthy positioning in AI search.',
@@ -267,6 +274,7 @@ const pages: LandingPage[] = [
   {
     slug: 'law-firm-seo-aeo',
     category: 'industry',
+    metaTitle: 'SEO and AEO for Law Firms',
     title: 'SEO and AEO for Law Firms That Need Trust, Clarity, and Local Visibility',
     description:
       'SEO and AEO for law firms that want stronger local discovery, clearer practice area pages, and better trust signals in Google and AI search.',
@@ -312,6 +320,7 @@ const pages: LandingPage[] = [
   {
     slug: 'home-services-seo-aeo',
     category: 'industry',
+    metaTitle: 'SEO and AEO for Home Services',
     title: 'SEO and AEO for Home Service Businesses That Need More High-Intent Leads',
     description:
       'SEO and AEO for HVAC, plumbing, roofing, landscaping, and other home service businesses that need stronger local discovery and clearer trust signals.',
@@ -357,6 +366,7 @@ const pages: LandingPage[] = [
   {
     slug: 'b2b-services-seo-aeo',
     category: 'industry',
+    metaTitle: 'SEO and AEO for B2B Service Companies',
     title: 'SEO and AEO for B2B Service Companies That Need Better Qualified Demand',
     description:
       'SEO and AEO for agencies, consultancies, and B2B service companies that want clearer positioning and stronger search-driven discovery.',
