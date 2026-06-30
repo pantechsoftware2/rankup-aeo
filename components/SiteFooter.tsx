@@ -17,6 +17,8 @@ const groups = [
       { href: '/methodology', label: 'Methodology' },
       { href: '/contact', label: 'Contact' },
       { href: '/llms.txt', label: 'LLMs.txt' },
+      { href: '/llms-full.txt', label: 'Full LLMs.txt' },
+      { href: '/feed.xml', label: 'RSS Feed' },
     ],
   },
 ];

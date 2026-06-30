@@ -27,6 +27,108 @@ export interface BlogPost {
 
 const posts: BlogPost[] = [
   {
+    slug: 'how-to-make-content-citeable-in-ai-search',
+    title: 'How to Make Content Citeable in AI Search',
+    description:
+      'A practical guide to citeable content for AI search, including direct answers, proof, structure, internal links, and page details that help answer engines trust your site.',
+    excerpt:
+      'Citeable content answers the query fast, names the entity clearly, supports claims with proof, and gives answer engines a clean page they can trust.',
+    publishedAt: '2026-06-30T09:00:00.000Z',
+    updatedAt: '2026-06-30T09:00:00.000Z',
+    readingTime: '7 min read',
+    keywords: [
+      'citeable content for AI search',
+      'AI search citations',
+      'answer engine optimization',
+      'AEO content',
+      'AI visibility',
+      'Google AI Overviews optimization',
+    ],
+    takeaways: [
+      'Citeable content gives a direct answer in the first few sentences instead of making the reader hunt for the point.',
+      'Answer engines need clear entities, supported claims, visible proof, and page structure that matches the query.',
+      'Internal links help connect the article, service pages, industry pages, and audit flow into one understandable visibility system.',
+      'The goal is not to write for machines. The goal is to make useful human content easier for machines to verify and summarize.',
+    ],
+    sections: [
+      {
+        heading: 'Start with the answer',
+        paragraphs: [
+          'Citeable content for AI search is content that an answer engine can safely use as a source because it answers the query directly, explains the topic clearly, and supports important claims with visible evidence. If the page opens with vague positioning or a long warmup, it is harder for both people and machines to understand why the page deserves to be cited.',
+          'The first 100 words should say what the page is about, who it is for, and what the reader should do next. That does not mean writing robotic copy. It means respecting the query enough to answer it before adding nuance.',
+        ],
+      },
+      {
+        heading: 'Make the entity unmistakable',
+        paragraphs: [
+          'AI search systems need to understand what the business, product, service, location, and category are. If your page swaps between vague labels, clever taglines, and inconsistent service names, the system has to guess.',
+          'Use the same core language across titles, headings, body copy, schema, navigation, and internal links. A page about Google AI Overviews optimization should say that plainly, then explain the related terms naturally instead of hiding behind buzzwords.',
+        ],
+        bullets: [
+          'Name the service or topic in the title and H1.',
+          'Use a concise definition near the top of the page.',
+          'Connect the topic to relevant services, industries, and proof pages.',
+          'Avoid clever phrasing when clear category language is needed.',
+        ],
+      },
+      {
+        heading: 'Support claims with proof',
+        paragraphs: [
+          'Answer engines are more likely to trust content that includes concrete details. That proof can be original research, process detail, named deliverables, client examples, expert review, citations, dates, or clearly stated limitations.',
+          'Generic claims like "we help you grow" do almost nothing. A citeable page explains what changes, what gets delivered, and what cannot be guaranteed. The restraint matters because overclaimed pages feel less safe to cite.',
+        ],
+      },
+      {
+        heading: 'Write sections that map to real questions',
+        paragraphs: [
+          'Good AEO content is not a pile of keywords. It is a clean answer path. Break the page into sections that match how a buyer or researcher thinks: what it is, who it is for, how it works, what proof matters, what the tradeoffs are, and what to do next.',
+          'This structure helps readers scan the page and helps answer engines extract the right part of the page for a specific query. It also reduces the risk that a model summarizes you from a weaker third-party source because your own page was too thin.',
+        ],
+        bullets: [
+          'Definition or direct answer',
+          'Use cases and audience',
+          'Process or methodology',
+          'FAQs and comparison questions',
+          'Related service and industry links',
+        ],
+      },
+      {
+        heading: 'Use internal links as evidence trails',
+        paragraphs: [
+          'Internal links are not just navigation. They tell crawlers and answer engines how the site thinks about a topic. A blog post about AI search citations should link to the related service page, the audit flow, and supporting research. Service pages should link back to the guide when the guide explains the work in more depth.',
+          'Use anchor text that describes the destination. "Learn how to make content citeable in AI search" is more helpful than "click here" because the link itself carries context.',
+        ],
+      },
+      {
+        heading: 'Keep the page useful after the first answer',
+        paragraphs: [
+          'A direct answer earns attention. Depth earns trust. After the opening answer, add examples, limitations, next steps, and related pages that help a real buyer make a decision.',
+          'The strongest pages do both jobs: they give AI systems a clean summary and give humans enough substance to believe the business knows what it is doing.',
+        ],
+      },
+    ],
+    sources: [
+      {
+        title: 'AI Overviews expand to over 200 countries and territories, more than 40 languages',
+        publisher: 'Google',
+        url: 'https://blog.google/products/search/ai-overview-expansion-may-2025-update/',
+        publishedAt: '2025-05-20',
+      },
+      {
+        title: 'Introducing ChatGPT search',
+        publisher: 'OpenAI',
+        url: 'https://openai.com/index/introducing-chatgpt-search/',
+        publishedAt: '2024-10-31',
+      },
+      {
+        title: 'Build and Submit a Sitemap',
+        publisher: 'Google Search Central',
+        url: 'https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap',
+        publishedAt: '2025-12-10',
+      },
+    ],
+  },
+  {
     slug: 'ai-search-is-already-the-front-door',
     title: 'AI Search Is Not Coming. It Is Already the Front Door.',
     description:

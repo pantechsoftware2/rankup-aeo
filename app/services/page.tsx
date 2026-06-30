@@ -34,6 +34,16 @@ export default function ServicesIndexPage() {
             The work is different on the surface, but the job underneath is the same: make the
             business easier to find, easier to trust, and easier to choose.
           </p>
+          <p className="mt-5 text-base leading-7 text-gray-400">
+            For the content side of that work, read our guide on{' '}
+            <Link
+              href="/blog/how-to-make-content-citeable-in-ai-search"
+              className="font-semibold text-white transition hover:text-green-300"
+            >
+              how to make content citeable in AI search
+            </Link>
+            .
+          </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2">

@@ -266,6 +266,10 @@ function LandingPageTemplate({
                   Read research
                   <ArrowRight className="h-4 w-4" />
                 </Link>
+                <Link href="/blog/how-to-make-content-citeable-in-ai-search" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-bold text-white transition hover:border-white/20">
+                  Make content citeable
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </section>
           </>
