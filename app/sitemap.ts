@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllBlogPosts();
   const landingPages = getLandingPages();
 
-  return [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: absoluteUrl('/'),
       lastModified: now,
@@ -57,6 +57,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.75,
     },
+    {
+      url: absoluteUrl('/llms.txt'),
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.45,
+    },
+    {
+      url: absoluteUrl('/llms-full.txt'),
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.4,
+    },
+    {
+      url: absoluteUrl('/feed.xml'),
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.35,
+    },
+  ];
+
+  return [
+    ...staticPages,
     ...posts.map((post) => ({
       url: absoluteUrl(`/blog/${post.slug}`),
       lastModified: new Date(post.updatedAt),
