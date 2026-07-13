@@ -1,6 +1,6 @@
 # Weekly SEO Item 6: Data-Driven Action
 
-Run date: 2026-06-30
+Run date: 2026-07-13
 Branch: `data-driven-action`
 
 ## Status

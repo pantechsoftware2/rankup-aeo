@@ -4,21 +4,21 @@ const groups = [
   {
     title: 'Explore',
     links: [
-      { href: '/services', label: 'Services' },
-      { href: '/industries', label: 'Industries' },
-      { href: '/blog', label: 'Blog' },
-      { href: '/audit-flow', label: 'Audit Flow' },
+      { href: '/services', label: 'Services', context: ' for SEO and AEO visibility' },
+      { href: '/industries', label: 'Industries', context: ' helped by RankUp AEO' },
+      { href: '/blog', label: 'Blog', context: ' with SEO and AEO research' },
+      { href: '/audit-flow', label: 'Audit Flow', context: ' for the visibility report' },
     ],
   },
   {
     title: 'Trust',
     links: [
-      { href: '/about', label: 'About' },
-      { href: '/methodology', label: 'Methodology' },
-      { href: '/contact', label: 'Contact' },
-      { href: '/llms.txt', label: 'LLMs.txt' },
-      { href: '/llms-full.txt', label: 'Full LLMs.txt' },
-      { href: '/feed.xml', label: 'RSS Feed' },
+      { href: '/about', label: 'About', context: ' RankUp AEO' },
+      { href: '/methodology', label: 'Methodology', context: ' for SEO and AEO audits' },
+      { href: '/contact', label: 'Contact', context: ' RankUp AEO' },
+      { href: '/llms.txt', label: 'LLMs.txt', context: ' summary for AI crawlers' },
+      { href: '/llms-full.txt', label: 'Full LLMs.txt', context: ' content file for AI crawlers' },
+      { href: '/feed.xml', label: 'RSS Feed', context: ' for RankUp AEO updates' },
     ],
   },
 ];
@@ -43,7 +43,7 @@ export default function SiteFooter() {
               {group.links.map((link) => (
                 <Link key={link.href} href={link.href} className="transition hover:text-white">
                   {link.label}
-                  <span className="sr-only"> footer link</span>
+                  <span className="sr-only">{link.context}</span>
                 </Link>
               ))}
             </div>

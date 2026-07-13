@@ -567,6 +567,15 @@ export default function ReportContent() {
   const previewGeoRecommendations = deep?.geoSpecificRecommendations?.slice(0, 2) || [];
   const shareDisabled = !displayUrl;
   const exportDisabled = isExporting || stage !== 'complete';
+  const fastPreviewScore =
+    fast
+      ? Math.round((fast.clarity.clarityScore * 0.55) + (fast.technical.technicalScore * 0.45))
+      : null;
+  const displayedScore = deep?.overallScore ?? fastPreviewScore;
+  const displayedScoreLabel = deep ? 'Overall Score' : 'Preview Score';
+  const displayedScoreNote = deep
+    ? 'Full audit score'
+    : 'Based on clarity and technical scan';
 
   const technicalIssueLabels: Record<string, string> = {
     missingMetaDescription: 'Missing meta description',
@@ -761,10 +770,15 @@ export default function ReportContent() {
             </div>
 
             {/* Center: Overall Score Gauge */}
-            {stage === 'complete' && deep && (
+            {displayedScore !== null && (
               <div className="px-6 border-l border-r border-white/5">
-                <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3 text-center">Overall Score</div>
-                <CircleGauge score={deep.overallScore} size={140} />
+                <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3 text-center">
+                  {displayedScoreLabel}
+                </div>
+                <CircleGauge score={displayedScore} size={140} />
+                <div className="mt-2 text-center text-[10px] uppercase tracking-widest text-zinc-600">
+                  {displayedScoreNote}
+                </div>
               </div>
             )}
 
@@ -895,7 +909,18 @@ export default function ReportContent() {
                 <SkeletonLoader />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {fastPreviewScore !== null && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#121212] border border-green-500/20 rounded-2xl p-4 md:col-span-3">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="text-sm font-semibold text-white mb-1">Preview Score</h3>
+                        <p className="text-xs text-zinc-500">Fast score based on message clarity and technical readiness.</p>
+                      </div>
+                      <div className="text-4xl font-bold text-white font-space">{fastPreviewScore}<span className="text-sm text-zinc-500">/100</span></div>
+                    </div>
+                  </motion.div>
+                )}
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="bg-[#121212] border border-white/10 rounded-2xl p-4">
                   <h3 className="text-sm font-semibold text-white mb-2">Clarity Score</h3>
                   <p className="text-sm text-zinc-400 mb-2">Score: {fast.clarity.clarityScore}/100</p>
@@ -912,7 +937,7 @@ export default function ReportContent() {
                   </div>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#121212] border border-white/10 rounded-2xl p-4 md:col-span-2">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#121212] border border-white/10 rounded-2xl p-4 md:col-span-1">
                   <h3 className="text-sm font-semibold text-white mb-2">Competitors</h3>
                   <div className="text-xs text-zinc-400 space-y-1">
                     {fast.competitors?.competitors?.length > 0 ? (

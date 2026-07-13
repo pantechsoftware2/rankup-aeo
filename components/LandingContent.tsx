@@ -405,15 +405,15 @@ export default function LandingContent() {
               </div>
               <div className="grid gap-4">
                 {servicePages.map((page) => (
-                  <article
-                    key={page.slug}
-                    className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
-                  >
-                    <Link href={`/services/${page.slug}`} className="absolute inset-0 rounded-2xl">
-                      <span className="sr-only">{page.keywords[0]}</span>
+                  <article key={page.slug} className="relative">
+                    <Link
+                      href={`/services/${page.slug}`}
+                      className="block rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+                    >
+                      <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
+                      <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
+                      <span className="sr-only"> about {page.keywords[0]}</span>
                     </Link>
-                    <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
-                    <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
                   </article>
                 ))}
               </div>
@@ -439,15 +439,15 @@ export default function LandingContent() {
               </div>
               <div className="grid gap-4">
                 {industryPages.map((page) => (
-                  <article
-                    key={page.slug}
-                    className="relative rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
-                  >
-                    <Link href={`/industries/${page.slug}`} className="absolute inset-0 rounded-2xl">
-                      <span className="sr-only">{page.keywords[0]}</span>
+                  <article key={page.slug} className="relative">
+                    <Link
+                      href={`/industries/${page.slug}`}
+                      className="block rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
+                    >
+                      <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
+                      <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
+                      <span className="sr-only"> about {page.keywords[0]}</span>
                     </Link>
-                    <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
-                    <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
                   </article>
                 ))}
               </div>

@@ -10,11 +10,16 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
   const [touched, setTouched] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // Regex: matches "text" + "." + "2+ letters" (e.g. .com, .ai, .co)
   const isValidDomain = (input: string) => {
-    // Strip http/https/www for the check if needed, but simple regex works for user input
-    // This allows "google.com" or "https://google.com" but fails "google"
-    return /\.[a-z]{2,}$/i.test(input);
+    const value = input.trim();
+    if (!value) return false;
+
+    try {
+      const parsed = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+      return /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(parsed.hostname) && !parsed.hostname.includes('..');
+    } catch {
+      return false;
+    }
   };
 
   const isInvalid = url.length > 0 && !isValidDomain(url);
@@ -43,6 +48,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
       <nav className="absolute inset-x-0 top-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
         {/* LOGO SECTION */}
         <Link href="/" className="block h-10 w-28 cursor-pointer transition-transform hover:scale-105 sm:h-12 sm:w-40">
+          <span className="sr-only">RankUp AEO homepage</span>
           <Image 
             src="/logo-320.png" 
             alt="RankUp Logo" 
@@ -61,42 +67,49 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white lg:inline"
           >
             Services
+            <span className="sr-only"> for SEO and AEO visibility</span>
           </Link>
           <Link
             href="/industries"
             className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white lg:inline"
           >
             Industries
+            <span className="sr-only"> helped by RankUp AEO</span>
           </Link>
           <Link
             href="/about"
             className="text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white"
           >
             About
+            <span className="sr-only"> RankUp AEO</span>
           </Link>
           <Link
             href="/methodology"
             className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white sm:inline"
           >
             Method
+            <span className="sr-only"> for SEO and AEO audits</span>
           </Link>
           <Link
             href="/blog"
             className="text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white"
           >
             Blog
+            <span className="sr-only"> with SEO and AEO research</span>
           </Link>
           <Link
             href="/contact"
             className="hidden text-xs font-bold uppercase tracking-wider text-zinc-400 transition hover:text-white md:inline"
           >
             Contact
+            <span className="sr-only"> RankUp AEO</span>
           </Link>
           <a
             href="/audit-flow"
             className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all hover:scale-105 flex items-center gap-2 group"
           >
             Get audit
+            <span className="sr-only"> from the desktop navigation</span>
             <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </a>
         </div>
@@ -107,6 +120,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-black transition hover:bg-gray-200"
           >
             Get audit
+            <span className="sr-only"> from the mobile navigation</span>
             <ArrowRightIcon className="h-3 w-3" />
           </Link>
           <button
@@ -137,6 +151,7 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
                   className="rounded-xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
                 >
                   {label}
+                  <span className="sr-only"> page</span>
                 </Link>
               ))}
             </div>
