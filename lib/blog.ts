@@ -30,7 +30,7 @@ const posts: BlogPost[] = [
     slug: 'how-to-make-content-citeable-in-ai-search',
     title: 'How to Make Content Citeable in AI Search',
     description:
-      'A practical guide to citeable content for AI search, including direct answers, proof, structure, internal links, and page details that help answer engines trust your site.',
+      'A practical guide to citeable AI search content: direct answers, proof, structure, links, and details that help answer engines trust your site.',
     excerpt:
       'Citeable content answers the query fast, names the entity clearly, supports claims with proof, and gives answer engines a clean page they can trust.',
     publishedAt: '2026-06-30T09:00:00.000Z',
