@@ -42,13 +42,14 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
       {/* --- NAVIGATION BAR --- */}
       <nav className="absolute inset-x-0 top-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
         {/* LOGO SECTION */}
-        <Link href="/" className="relative h-10 w-28 cursor-pointer transition-transform hover:scale-105 sm:h-12 sm:w-40">
+        <Link href="/" className="block h-10 w-28 cursor-pointer transition-transform hover:scale-105 sm:h-12 sm:w-40">
           <Image 
-            src="/logo.png" 
+            src="/logo-320.png" 
             alt="RankUp Logo" 
-            fill
+            width={320}
+            height={160}
             sizes="160px"
-            className="object-contain object-left"
+            className="h-full w-full object-contain object-left"
             priority
           />
         </Link>
