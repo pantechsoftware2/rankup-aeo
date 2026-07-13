@@ -17,8 +17,23 @@ function normalizeBaseUrl(value?: string) {
   return candidate.endsWith('/') ? candidate.slice(0, -1) : candidate;
 }
 
+function isLocalhostUrl(value: string) {
+  try {
+    const { hostname } = new URL(value);
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  } catch {
+    return false;
+  }
+}
+
 export function getSiteUrl() {
-  return normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL);
+  const siteUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL);
+
+  if (process.env.NODE_ENV === 'production' && isLocalhostUrl(siteUrl)) {
+    return DEFAULT_SITE_URL;
+  }
+
+  return siteUrl;
 }
 
 export function absoluteUrl(path = '/') {
