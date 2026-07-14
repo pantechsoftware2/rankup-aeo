@@ -1,7 +1,7 @@
 import { crawlWebsite } from '@/lib/crawler';
 import { callLLM, cleanJsonResponse, parseJsonResponse } from '@/lib/openrouter';
 import { MODELS } from '@/lib/models';
-import { performBrandSearch } from '@/lib/serper';
+import { performBrandSearch, searchSerper, type SearchScanResult } from '@/lib/serper';
 import type { CrawlPayload } from '@/types/crawl';
 
 interface ClassificationResult {
@@ -94,8 +94,10 @@ export async function performFastScan(inputUrl: string, options: FastScanOptions
   const clarityPromise = runClarityAnalysis(crawlPayload);
   const technicalPromise = Promise.resolve(runTechnicalAnalysis(crawlPayload));
 
+  const brandName = deriveBrandName(crawlPayload);
+
   const competitorPromise = classificationPromise
-    .then((classification) => runCompetitorAnalysis(classification, crawlPayload.meta.title || 'Unknown'))
+    .then((classification) => runCompetitorAnalysis(classification, brandName))
     .catch((error) => {
       console.warn('[Fast Scan] Classification failed, using fallback for competitor analysis:', error?.message || error);
 
@@ -111,7 +113,7 @@ export async function performFastScan(inputUrl: string, options: FastScanOptions
         confidence: 'low',
       };
 
-      return runCompetitorAnalysis(fallbackClassification, crawlPayload.meta.title || 'Unknown');
+      return runCompetitorAnalysis(fallbackClassification, brandName);
     });
 
   // Enforce a per-task cap for fast analysis and run in parallel.
@@ -164,9 +166,11 @@ export async function performFastScan(inputUrl: string, options: FastScanOptions
     ? technicalSettled.value
     : { technicalScore: 0, deductions: [{ reason: 'Analysis failed', points: 100 }] };
 
-  const competitors = competitorsSettled.status === 'fulfilled'
-    ? competitorsSettled.value
-    : { competitors: generateFallbackCompetitors(resolvedClassification, deriveBrandName(crawlPayload)) };
+  const competitors = await normalizeCompetitorResult(
+    competitorsSettled.status === 'fulfilled' ? competitorsSettled.value : null,
+    resolvedClassification,
+    brandName
+  );
 
   const presence = await withTimeout(
     runPresenceAssessment(crawlPayload),
@@ -498,9 +502,7 @@ async function runCompetitorAnalysis(
       : [];
 
     if (competitors.length < 3) {
-      return {
-        competitors: generateFallbackCompetitors(classification, brandName),
-      };
+      return findCompetitorsFromSearch(classification, brandName);
     }
 
     console.log('[Competitor Analysis] Success:', { count: competitors.length });
@@ -513,10 +515,20 @@ async function runCompetitorAnalysis(
       timestamp: new Date().toISOString(),
     });
 
-    return {
-      competitors: generateFallbackCompetitors(classification, brandName),
-    };
+    return findCompetitorsFromSearch(classification, brandName);
   }
+}
+
+async function normalizeCompetitorResult(
+  result: CompetitorResult | null,
+  classification: Pick<ClassificationResult, 'industry' | 'niche'>,
+  brandName: string
+): Promise<CompetitorResult> {
+  if (result?.competitors?.length) {
+    return result;
+  }
+
+  return findCompetitorsFromSearch(classification, brandName);
 }
 
 function isGenericCompetitorName(name: string) {
@@ -549,79 +561,150 @@ function isSameBrand(candidate: string, brandName: string) {
   return sharedTokens.length >= 2;
 }
 
-function generateFallbackCompetitors(
+async function findCompetitorsFromSearch(
   classification: Pick<ClassificationResult, 'industry' | 'niche'>,
   brandName = ''
+): Promise<CompetitorResult> {
+  const searchSubject = [brandName, classification.niche, classification.industry]
+    .map((part) => part?.trim())
+    .filter((part) => part && !/^unknown/i.test(part));
+  const category = [classification.niche, classification.industry]
+    .map((part) => part?.trim())
+    .filter((part) => part && !/^unknown/i.test(part))
+    .join(' ');
+
+  if (!brandName && !category) {
+    return { competitors: [] };
+  }
+
+  const queries = Array.from(new Set([
+    brandName ? `"${brandName}" competitors alternatives` : '',
+    brandName ? `companies like "${brandName}"` : '',
+    category ? `${category} competitors alternatives` : '',
+    searchSubject.join(' ') ? `${searchSubject.join(' ')} similar companies` : '',
+  ].filter(Boolean)));
+
+  try {
+    const batches = await Promise.all(queries.slice(0, 4).map((query) => searchSerper(query)));
+    const results = batches.flat();
+    const competitors = extractSearchCompetitors(results, brandName);
+
+    console.log('[Competitor Search] Derived competitors from search:', {
+      brandName,
+      category,
+      queryCount: queries.length,
+      resultCount: results.length,
+      competitorCount: competitors.length,
+    });
+
+    return { competitors };
+  } catch (error: any) {
+    console.warn('[Competitor Search] Failed to derive competitors from search:', error?.message || error);
+    return { competitors: [] };
+  }
+}
+
+function extractSearchCompetitors(
+  results: SearchScanResult[],
+  brandName: string
 ): { name: string; estimatedVisibility: number }[] {
-  const category = `${classification.industry} ${classification.niche}`.toLowerCase();
-  const fallbackSets: Array<{
-    test: RegExp;
-    competitors: { name: string; estimatedVisibility: number }[];
-  }> = [
-    {
-      test: /study abroad|overseas education|education consult|university admission|ielts|visa support/,
-      competitors: [
-        { name: 'IDP Education', estimatedVisibility: 88 },
-        { name: 'Leverage Edu', estimatedVisibility: 82 },
-        { name: 'Yocket', estimatedVisibility: 76 },
-        { name: 'AECC Global', estimatedVisibility: 71 },
-        { name: 'KC Overseas Education', estimatedVisibility: 66 },
-      ],
-    },
-    {
-      test: /seo|aeo|answer engine|digital marketing|marketing agency/,
-      competitors: [
-        { name: 'WebFX', estimatedVisibility: 86 },
-        { name: 'NP Digital', estimatedVisibility: 80 },
-        { name: 'Semrush Agency Partners', estimatedVisibility: 74 },
-        { name: 'Victorious', estimatedVisibility: 68 },
-        { name: 'Siege Media', estimatedVisibility: 62 },
-      ],
-    },
-    {
-      test: /saas|software|platform|app|automation/,
-      competitors: [
-        { name: 'HubSpot', estimatedVisibility: 88 },
-        { name: 'Salesforce', estimatedVisibility: 84 },
-        { name: 'Zoho', estimatedVisibility: 78 },
-        { name: 'Monday.com', estimatedVisibility: 70 },
-        { name: 'ClickUp', estimatedVisibility: 65 },
-      ],
-    },
-    {
-      test: /law|legal|attorney|solicitor/,
-      competitors: [
-        { name: 'FindLaw', estimatedVisibility: 82 },
-        { name: 'Avvo', estimatedVisibility: 78 },
-        { name: 'Justia', estimatedVisibility: 74 },
-        { name: 'Martindale-Avvo', estimatedVisibility: 68 },
-        { name: 'LawInfo', estimatedVisibility: 61 },
-      ],
-    },
-    {
-      test: /home service|plumbing|hvac|roofing|cleaning|electrician/,
-      competitors: [
-        { name: 'Angi', estimatedVisibility: 84 },
-        { name: 'HomeAdvisor', estimatedVisibility: 80 },
-        { name: 'Thumbtack', estimatedVisibility: 75 },
-        { name: 'Yelp', estimatedVisibility: 68 },
-        { name: 'Porch', estimatedVisibility: 59 },
-      ],
-    },
-  ];
+  const candidates = new Map<string, { name: string; score: number }>();
 
-  const matched = fallbackSets.find((set) => set.test.test(category));
-  const competitors = matched?.competitors || [
-    { name: 'Google Business Profile competitors', estimatedVisibility: 72 },
-    { name: 'Top organic search results', estimatedVisibility: 68 },
-    { name: 'Local directory leaders', estimatedVisibility: 61 },
-    { name: 'Category review sites', estimatedVisibility: 55 },
-    { name: 'Nearby service providers', estimatedVisibility: 48 },
-  ];
+  for (const result of results) {
+    const sourceText = `${result.title} ${result.snippet}`;
+    const sourceWeight = hasCompetitorIntent(sourceText) ? 4 : 1;
+    const names = [
+      ...extractComparisonNames(sourceText, brandName),
+      extractDomainBrand(result.link),
+    ].filter(Boolean) as string[];
 
-  const filtered = competitors.filter((competitor) => !isSameBrand(competitor.name, brandName));
-  console.log('[Competitor Fallback] Using category competitors for:', classification.industry, classification.niche);
-  return filtered.slice(0, 5);
+    for (const name of names) {
+      const cleaned = cleanCompetitorName(name);
+      if (!isValidSearchCompetitor(cleaned, brandName)) {
+        continue;
+      }
+
+      const key = normalizeComparableName(cleaned);
+      const current = candidates.get(key) || { name: cleaned, score: 0 };
+      current.score += sourceWeight;
+      candidates.set(key, current);
+    }
+  }
+
+  return Array.from(candidates.values())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map((candidate, index) => ({
+      name: candidate.name,
+      estimatedVisibility: Math.max(45, Math.min(88, 82 - index * 7 + Math.min(candidate.score, 6))),
+    }));
+}
+
+function hasCompetitorIntent(text: string) {
+  return /alternatives?|competitors?|compare|comparison|versus|vs\.?|similar companies|companies like/i.test(text);
+}
+
+function extractComparisonNames(text: string, brandName: string) {
+  const candidates = new Set<string>();
+  const separators = /\s+vs\.?\s+|\s+versus\s+|\s+alternatives?\s+to\s+|\s+competitors?\s+to\s+|\s+similar to\s+|\s+companies like\s+/i;
+
+  for (const part of text.split(/[|•·,\n]/)) {
+    const trimmed = part.trim();
+    if (!hasCompetitorIntent(trimmed)) {
+      continue;
+    }
+
+    for (const segment of trimmed.split(separators)) {
+      const cleaned = cleanCompetitorName(segment);
+      if (cleaned && !isSameBrand(cleaned, brandName)) {
+        candidates.add(cleaned);
+      }
+    }
+  }
+
+  for (const match of text.matchAll(/\b[A-Z][a-zA-Z0-9&+.-]{2,}(?:\s+[A-Z][a-zA-Z0-9&+.-]{2,}){0,3}\b/g)) {
+    const cleaned = cleanCompetitorName(match[0]);
+    if (cleaned && !isSameBrand(cleaned, brandName)) {
+      candidates.add(cleaned);
+    }
+  }
+
+  return Array.from(candidates);
+}
+
+function extractDomainBrand(link: string) {
+  try {
+    const host = new URL(link).hostname.replace(/^www\./, '');
+    const parts = host.split('.');
+    const root = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+    return root
+      .split(/[-_]/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  } catch {
+    return '';
+  }
+}
+
+function cleanCompetitorName(name: string) {
+  return name
+    .replace(/\b(best|top|leading|popular|reviews?|pricing|features?|alternatives?|competitors?|comparison|compare|versus|vs)\b/gi, ' ')
+    .replace(/\b(in|for|near|with|and|or|the|a|an|to|of)\b$/gi, ' ')
+    .replace(/[()[\]{}"']/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
+}
+
+function isValidSearchCompetitor(name: string, brandName: string) {
+  if (!name || name.length < 3) return false;
+  if (isSameBrand(name, brandName)) return false;
+  if (isGenericCompetitorName(name)) return false;
+  if (/^(http|https|www|com|org|net|search|result|website|homepage|limited crawl fallback)$/i.test(name)) return false;
+  if (/^(google|youtube|linkedin|facebook|instagram|reddit|x|twitter|quora|medium|wikipedia)$/i.test(name)) return false;
+  if (/^\d/.test(name)) return false;
+  return true;
 }
 
 function deriveBrandName(crawl: CrawlPayload): string {

@@ -571,6 +571,7 @@ export default function ReportContent() {
     fast
       ? Math.round((fast.clarity.clarityScore * 0.55) + (fast.technical.technicalScore * 0.45))
       : null;
+  const displayedCompetitors = fast?.competitors?.competitors || [];
   const displayedScore = deep?.overallScore ?? fastPreviewScore;
   const displayedScoreLabel = deep ? 'Overall Score' : 'Preview Score';
   const displayedScoreNote = deep
@@ -940,8 +941,8 @@ export default function ReportContent() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#121212] border border-white/10 rounded-2xl p-4 md:col-span-1">
                   <h3 className="text-sm font-semibold text-white mb-2">Competitors</h3>
                   <div className="text-xs text-zinc-400 space-y-1">
-                    {fast.competitors?.competitors?.length > 0 ? (
-                      fast.competitors.competitors.map((c, idx) => (
+                    {displayedCompetitors.length > 0 ? (
+                      displayedCompetitors.map((c, idx) => (
                         <div key={idx}>• {c.name}: {c.estimatedVisibility}%</div>
                       ))
                     ) : isAnalyzing ? (
