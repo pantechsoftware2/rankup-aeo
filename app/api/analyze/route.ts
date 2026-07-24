@@ -3,6 +3,8 @@ import { performFastScan } from "@/lib/fast-scan";
 import { performDeepScan } from "@/lib/deep-scan";
 import { crawlWebsite } from "@/lib/crawler";
 import { applyRateLimit, isUserUrlValidationError, validatePublicAuditUrl } from "@/lib/security";
+import { createAuditHistory, hasUsedFreeAudit } from "@/backend/services/audit-history.service";
+import { normalizeAuditDomain } from "@/backend/utils/domain";
 
 export const maxDuration = 300;
 
@@ -40,6 +42,15 @@ export async function POST(req: Request) {
     }
 
     const normalizedUrl = await validatePublicAuditUrl(inputUrl);
+    const domain = normalizeAuditDomain(normalizedUrl);
+
+    if (await hasUsedFreeAudit(domain)) {
+      return NextResponse.json({
+        requiresPayment: true,
+        price: 10,
+        domain,
+      });
+    }
 
     console.log(`[Analyze] Starting orchestration for: ${normalizedUrl} (stream=${streamMode})`);
 
@@ -64,6 +75,14 @@ export async function POST(req: Request) {
             console.log(`[Analyze] Streamed fast stage`);
 
             if (fastResult.fast.readiness.recommendedPath === 'foundation') {
+              await createAuditHistory({
+                domain,
+                freeAuditUsed: true,
+                paymentStatus: 'free',
+                crawl: fastResult.crawl,
+                fast: fastResult.fast,
+                deep: null,
+              });
               const totalMs = Date.now() - startTime;
               controller.enqueue(encoder.encode(JSON.stringify({ stage: 'complete', timing: { totalMs } }) + '\n'));
               console.log(`[Analyze] Foundation path selected in ${totalMs}ms`);
@@ -72,11 +91,13 @@ export async function POST(req: Request) {
             }
 
             // Stage 3: Run deep scan and send results
+            let deepReport = null;
             try {
               console.log(`[Analyze] Starting deep scan...`);
               const deepResult = await performDeepScan(fastResult.crawl, fastResult.fast);
               
               if (deepResult.success && deepResult.report) {
+                deepReport = deepResult.report;
                 controller.enqueue(encoder.encode(JSON.stringify({ stage: 'deep', data: deepResult.report }) + '\n'));
                 console.log(`[Analyze] Streamed deep stage (${deepResult.timing.totalMs}ms)`);
               } else {
@@ -93,6 +114,15 @@ export async function POST(req: Request) {
                 )
               );
             }
+
+            await createAuditHistory({
+              domain,
+              freeAuditUsed: true,
+              paymentStatus: 'free',
+              crawl: fastResult.crawl,
+              fast: fastResult.fast,
+              deep: deepReport,
+            });
 
             // Stage 4: Signal completion
             const totalMs = Date.now() - startTime;
@@ -123,6 +153,14 @@ export async function POST(req: Request) {
 
     if (fastResult.fast.readiness.recommendedPath === 'foundation') {
       const totalMs = Date.now() - startTime;
+      await createAuditHistory({
+        domain,
+        freeAuditUsed: true,
+        paymentStatus: 'free',
+        crawl: fastResult.crawl,
+        fast: fastResult.fast,
+        deep: null,
+      });
       return NextResponse.json({
         success: true,
         crawl: fastResult.crawl,
@@ -139,6 +177,15 @@ export async function POST(req: Request) {
     if (!deepResult.success || !deepResult.report) {
       throw new Error(deepResult.error || 'Deep scan failed');
     }
+
+    await createAuditHistory({
+      domain,
+      freeAuditUsed: true,
+      paymentStatus: 'free',
+      crawl: fastResult.crawl,
+      fast: fastResult.fast,
+      deep: deepResult.report,
+    });
 
     console.log(`[Analyze] Orchestration complete in ${totalMs}ms`);
     return NextResponse.json({
