@@ -2,6 +2,7 @@ import { crawlWebsite } from '@/lib/crawler';
 import { callLLM, cleanJsonResponse, parseJsonResponse } from '@/lib/openrouter';
 import { MODELS } from '@/lib/models';
 import { performBrandSearch, searchSerper, type SearchScanResult } from '@/lib/serper';
+import { debugLog } from '@/lib/logger';
 import type { CrawlPayload } from '@/types/crawl';
 
 interface ClassificationResult {
@@ -70,7 +71,7 @@ export async function performFastScan(inputUrl: string, options: FastScanOptions
     normalizedUrl = `https://${normalizedUrl}`;
   }
 
-  console.log(`[Fast Scan] Starting fast scan for: ${normalizedUrl}`);
+  debugLog('[Fast Scan] Starting.', { url: normalizedUrl });
 
   const crawlStart = Date.now();
 
@@ -80,12 +81,12 @@ export async function performFastScan(inputUrl: string, options: FastScanOptions
   if (options.crawlPayload) {
     crawlPayload = options.crawlPayload;
     crawlMs = Date.now() - crawlStart;
-    console.log(`[Fast Scan] Using pre-crawled payload (crawl time: ${crawlMs}ms)`);
+    debugLog('[Fast Scan] Using pre-crawled payload.', { crawlMs });
   } else {
-    console.log(`[Fast Scan] Starting crawl for: ${normalizedUrl}`);
+    debugLog('[Fast Scan] Starting crawl.', { url: normalizedUrl });
     crawlPayload = await crawlWebsite(normalizedUrl);
     crawlMs = Date.now() - crawlStart;
-    console.log(`[Fast Scan] Crawl completed in ${crawlMs}ms`);
+    debugLog('[Fast Scan] Crawl completed.', { crawlMs });
   }
 
   const analysisStart = Date.now();
@@ -196,7 +197,7 @@ export async function performFastScan(inputUrl: string, options: FastScanOptions
     },
   };
 
-  console.log(`[Fast Scan] Complete in ${totalMs}ms (crawl: ${crawlMs}ms, analysis: ${analysisMs}ms)`);
+  debugLog('[Fast Scan] Complete.', { totalMs, crawlMs, analysisMs });
   return response;
 }
 
@@ -229,7 +230,7 @@ async function runClassificationAnalysis(crawl: CrawlPayload): Promise<Classific
       throw new Error('Missing industry or niche in response');
     }
 
-    console.log('[Classification Analysis] Success:', { industry, niche, confidence });
+    debugLog('[Classification Analysis] Success.', { industry, niche, confidence });
     return { industry, niche, confidence };
   } catch (error: any) {
     console.error('[Classification Analysis] Failed:', {
@@ -286,7 +287,7 @@ async function runClarityAnalysis(crawl: CrawlPayload): Promise<ClarityResult> {
       throw new Error(`Invalid isCSR: ${parsed.isCSR}`);
     }
 
-    console.log('[Clarity Analysis] Success:', {
+    debugLog('[Clarity Analysis] Success.', {
       score: parsed.clarityScore,
       isCSR: parsed.isCSR,
     });
@@ -379,7 +380,7 @@ function generateClarityFallback(crawl: CrawlPayload): ClarityResult {
   }
   critique += 'Analyzed from page structure (LLM analysis unavailable).';
 
-  console.log('[Clarity Fallback] Generated from content analysis:', {
+  debugLog('[Clarity Fallback] Generated from content analysis.', {
     clarityScore,
     isCSR: crawl.content.isClientSideRendered,
   });
@@ -505,7 +506,7 @@ async function runCompetitorAnalysis(
       return findCompetitorsFromSearch(classification, brandName);
     }
 
-    console.log('[Competitor Analysis] Success:', { count: competitors.length });
+    debugLog('[Competitor Analysis] Success.', { count: competitors.length });
     return { competitors };
   } catch (error: any) {
     console.error('[Competitor Analysis] Failed:', {
@@ -589,7 +590,7 @@ async function findCompetitorsFromSearch(
     const results = batches.flat();
     const competitors = extractSearchCompetitors(results, brandName);
 
-    console.log('[Competitor Search] Derived competitors from search:', {
+    debugLog('[Competitor Search] Derived competitors from search.', {
       brandName,
       category,
       queryCount: queries.length,

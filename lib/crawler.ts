@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { fetchSmart } from './smartScraper';
 import { safeFetchWithRedirects } from './security';
+import { debugLog } from './logger';
 import { CrawlPayload } from '../types/crawl';
 
 /**
@@ -8,7 +9,7 @@ import { CrawlPayload } from '../types/crawl';
  * Pure data extraction - no LLM calls
  */
 export async function crawlWebsite(url: string): Promise<CrawlPayload> {
-  console.log(`🕷️ [Crawler] Starting crawl for: ${url}`);
+  debugLog('[Crawler] Starting crawl.', { url });
   
   // Fetch HTML using the smart scraper
   const html = await fetchSmart(url);
@@ -36,7 +37,7 @@ export async function crawlWebsite(url: string): Promise<CrawlPayload> {
     rawHtml: html.substring(0, 50000),
   };
   
-  console.log(`✅ [Crawler] Crawl complete for: ${url}`);
+  debugLog('[Crawler] Crawl complete.', { url });
   return payload;
 }
 

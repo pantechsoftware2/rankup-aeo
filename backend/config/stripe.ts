@@ -17,10 +17,15 @@ export function getStripeWebhookSecret() {
 }
 
 export function getAppUrl() {
-  return (
+  const appUrl = (
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
     process.env.APP_URL?.trim() ||
-    process.env.VERCEL_URL?.trim().replace(/^/, 'https://') ||
-    'http://localhost:3000'
-  ).replace(/\/$/, '');
+    process.env.VERCEL_URL?.trim().replace(/^/, 'https://')
+  )?.replace(/\/$/, '');
+
+  if (!appUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is not configured.');
+  }
+
+  return appUrl;
 }

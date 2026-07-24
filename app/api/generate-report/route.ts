@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { performFastScan } from '@/lib/fast-scan';
 import { performDeepScan } from '@/lib/deep-scan';
 import { applyRateLimit, isUserUrlValidationError, validatePublicAuditUrl } from '@/lib/security';
+import { debugLog } from '@/lib/logger';
 import type { DeepAuditReport } from '@/types/deep-audit';
 
 /**
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const normalizedUrl = await validatePublicAuditUrl(url);
 
-    console.log(`📊 Generating AEO Report for: ${brandName} (${normalizedUrl})`);
+    debugLog('[Generate Report] Generating AEO report.', { brandName, url: normalizedUrl });
 
     // Run fast -> deep to produce an audit report
     const fastResult = await performFastScan(normalizedUrl);

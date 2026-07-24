@@ -19,8 +19,6 @@ export async function exportAuditToPDF(
       throw new Error('Report content not found');
     }
 
-    console.log('Starting PDF export for:', url);
-
     // Simple approach: use the browser's built-in print-to-PDF
     // This is more reliable than trying to generate PDFs in browser
     if (typeof window !== 'undefined') {
@@ -28,8 +26,6 @@ export async function exportAuditToPDF(
       setTimeout(() => {
         window.print();
       }, 100);
-      
-      console.log('Print dialog opened. User can save as PDF from the dialog');
       return true;
     }
     
@@ -54,15 +50,14 @@ export async function shareAudit(url: string) {
         url: shareUrl,
       });
       return true;
-    } catch (err) {
-      console.log('Share cancelled or failed:', err);
+    } catch {
+      // User cancelled native share or the platform rejected it; clipboard fallback follows.
     }
   }
 
   // Fallback: Copy to clipboard
   try {
     await navigator.clipboard.writeText(shareUrl);
-    console.log('Share link copied to clipboard');
     return true;
   } catch (err) {
     console.error('Failed to copy share link:', err);

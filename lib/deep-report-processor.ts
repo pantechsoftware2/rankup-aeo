@@ -3,12 +3,8 @@ import { findNextQueuedJob, getDeepReportJob, updateDeepReportJob } from '@/lib/
 import { sendDeepReportReviewReadyAdminEmail } from '@/lib/report-delivery';
 
 function getPaidCallUrl() {
-  return (
-    process.env.NEXT_PUBLIC_PAID_CALL_URL?.trim() ||
-    process.env.NEXT_PUBLIC_PAID_CAL_URL?.trim() ||
-    process.env.NEXT_PUBLIC_BOOK_DEMO_URL?.trim() ||
-    'https://cal.com'
-  );
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/$/, '');
+  return appUrl ? `${appUrl}/audit-flow` : '/audit-flow';
 }
 
 export async function processDeepReportJob(id: string) {

@@ -57,11 +57,7 @@ export default function AuditConversionFlow() {
       },
     };
 
-    console.log('📊 Project Intake Payload:', payload);
-
     try {
-      // TODO: Replace with actual database save when DB is configured
-      // For now, send to API route that will handle storage
       const response = await fetch('/api/project-intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,18 +68,12 @@ export default function AuditConversionFlow() {
         throw new Error('Failed to save project intake');
       }
 
-      const result = await response.json();
-      console.log('✅ Saved successfully:', result);
+      await response.json();
 
       // Show success state
       setShowSuccess(true);
       
       // Optional: Reset after a delay or redirect
-      setTimeout(() => {
-        // Could redirect to dashboard or keep them here
-        console.log('Flow completed successfully');
-      }, 2000);
-
     } catch (error) {
       console.error('❌ Error saving project intake:', error);
       alert('There was an error saving your information. Please try again.');

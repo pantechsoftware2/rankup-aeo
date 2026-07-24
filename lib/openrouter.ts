@@ -1,5 +1,6 @@
 // --- CLEAN OPENROUTER CLIENT ---
 // Single source of truth for all LLM API calls
+import { debugLog } from './logger';
 
 export interface CallLLMOptions {
   model: string;
@@ -17,9 +18,10 @@ export interface CallLLMOptions {
  */
 export async function callLLM(options: CallLLMOptions): Promise<string> {
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || 'https://www.rankupaeo.com';
   
   if (!OPENROUTER_API_KEY) {
-    const error = new Error("MISSING_KEY: OPENROUTER_API_KEY is not set in .env.local");
+    const error = new Error('MISSING_KEY: OPENROUTER_API_KEY is not configured.');
     console.error(error.message);
     throw error;
   }
@@ -55,7 +57,7 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
   }
 
   try {
-    console.log('[OpenRouter] Making request to:', {
+    debugLog('[OpenRouter] Making request.', {
       model,
       hasSystemPrompt: !!systemPrompt,
       userPromptLength: userPrompt.length,
@@ -73,7 +75,7 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://rankup1.vercel.app',
+        'HTTP-Referer': appUrl,
         'X-Title': 'RankUp AEO',
       },
       body: JSON.stringify(requestBody),
@@ -97,8 +99,7 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
 
     const data = await response.json();
     
-    // Log response structure for debugging
-    console.log('[OpenRouter] Success Response:', {
+    debugLog('[OpenRouter] Success response.', {
       hasChoices: !!data.choices,
       choicesLength: data.choices?.length,
       hasError: !!data.error, 
@@ -149,7 +150,7 @@ export async function callLLM(options: CallLLMOptions): Promise<string> {
 
     // Strip ```json fences before returning
     const result = stripJsonFences(typeof content === 'string' ? content : JSON.stringify(content));
-    console.log('[OpenRouter] Returning content (first 200 chars):', result.substring(0, 200));
+    debugLog('[OpenRouter] Returning content.', { preview: result.substring(0, 200) });
     return result;
 
   } catch (error: any) {

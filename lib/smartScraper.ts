@@ -1,13 +1,12 @@
 import * as cheerio from 'cheerio'; // You likely already have this or a similar parser
 import { safeFetchText, safeFetchWithRedirects } from './security';
+import { debugLog } from './logger';
 
 // --- CONFIGURATION ---
 // Threshold: If visible text is less than this, we assume it's a "React Shell" and trigger fallback
 const MIN_TEXT_LENGTH = 300; 
 
-// Your API Key (Get a free one from ZenRows, ScraperAPI, etc.)
-// For now, if this is missing, it just returns the empty shell (current behavior)
-const ZENROWS_API_KEY = process.env.ZENROWS_API_KEY; 
+const SCRAPER_API_KEY = process.env.SCRAPER_API_KEY;
 
 function getErrorCode(error: unknown) {
   if (typeof error === 'object' && error && 'cause' in error) {
@@ -55,7 +54,7 @@ function buildLimitedFallbackHtml(url: string, reason: string) {
 }
 
 export async function fetchSmart(url: string) {
-  console.log(`⚡ [SmartScraper] Attempting Tier 1 (Direct Fetch): ${url}`);
+  debugLog('[SmartScraper] Attempting Tier 1 direct fetch.', { url });
   let tierOneHtml = '';
   let tierOneError: unknown = null;
   
@@ -76,7 +75,7 @@ export async function fetchSmart(url: string) {
     
     // Check Quality
     if (isContentValid(html)) {
-      console.log(`✅ [SmartScraper] Tier 1 Success.`);
+      debugLog('[SmartScraper] Tier 1 succeeded.');
       return html;
     } else {
       console.warn(`⚠️ [SmartScraper] Tier 1 yielded low content (React Shell?). Triggering Tier 2.`);
@@ -88,7 +87,7 @@ export async function fetchSmart(url: string) {
   }
 
   // --- TIER 2: HEADLESS BROWSER API (Fallback) ---
-  if (!ZENROWS_API_KEY) {
+  if (!SCRAPER_API_KEY) {
     console.error('❌ [SmartScraper] No API Key found for Tier 2. Falling back to limited result.');
 
     if (tierOneHtml) {
@@ -115,19 +114,19 @@ export async function fetchSmart(url: string) {
     }
   }
 
-  console.log(`🚀 [SmartScraper] Attempting Tier 2 (Scraping API)...`);
+  debugLog('[SmartScraper] Attempting Tier 2 scraping API.');
   
   try {
     // Example using ZenRows / ScraperAPI pattern (Adjust based on your provider)
     // Most work like: https://api.provider.com/?api_key=XYZ&url=TARGET&js_render=true
     
-    const apiUrl = `https://api.zenrows.com/v1/?apikey=${ZENROWS_API_KEY}&url=${encodeURIComponent(url)}&js_render=true&premium_proxy=true`;
+    const apiUrl = `https://api.zenrows.com/v1/?apikey=${SCRAPER_API_KEY}&url=${encodeURIComponent(url)}&js_render=true&premium_proxy=true`;
     
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(`API fetch failed: ${res.status}`);
     
     const html = await res.text();
-    console.log(`✅ [SmartScraper] Tier 2 Success (${html.length} chars).`);
+    debugLog('[SmartScraper] Tier 2 succeeded.', { htmlLength: html.length });
     return html;
 
   } catch (error) {

@@ -155,8 +155,6 @@ const GhostTownAlert = ({ onReset }: { onReset: () => void }) => (
 // --- MAIN DASHBOARD COMPONENT ---
 
 export default function ResultDashboard({ result, onReset }: { result: any, onReset: () => void }) {
-  console.log('🎨 ResultDashboard received:', result);
-  
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import crypto from 'node:crypto';
 
 const FALLBACK_ADMIN_EMAIL = 'yourss.naman@gmail.com';
@@ -44,17 +46,13 @@ export function isLikelyValidPhone(phone: string): boolean {
 export function getLeadEmailConfig() {
   const adminEmail =
     process.env.ADMIN_EMAIL?.trim() ||
-    process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() ||
     FALLBACK_ADMIN_EMAIL;
   const senderEmail =
     process.env.FROM_EMAIL?.trim() ||
     process.env.BREVO_SENDER_EMAIL?.trim() ||
     adminEmail;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || 'https://www.rankupaeo.com';
-  const bookDemoUrl =
-    process.env.NEXT_PUBLIC_PAID_CALL_URL?.trim() ||
-    process.env.NEXT_PUBLIC_PAID_CAL_URL?.trim() ||
-    process.env.NEXT_PUBLIC_BOOK_DEMO_URL?.trim();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/$/, '') || 'https://www.rankupaeo.com';
+  const bookDemoUrl = `${appUrl}/audit-flow`;
   const reviewAdminToken = process.env.DEEP_REPORT_ADMIN_TOKEN?.trim() || '';
   const emailProvider = (
     process.env.EMAIL_PROVIDER?.trim().toLowerCase() ||

@@ -33,18 +33,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Valid phone number is required' }, { status: 400 });
     }
 
-    // Log the intake data
-    console.log('📊 Project Intake Received:', {
-      name: payload.name,
-      email: payload.email,
-      phone: payload.phone,
-      plan: payload.plan,
-      planName: payload.planName,
-      planPrice: payload.planPrice,
-      keywordsCount: payload.keywords.length,
-      timestamp: payload.submittedAt
-    });
-
     const normalizedPhone = normalizePhone(payload.phone);
     const source = payload.source || 'implementation_intake';
     const { adminEmail, appUrl, bookDemoUrl } = getLeadEmailConfig();

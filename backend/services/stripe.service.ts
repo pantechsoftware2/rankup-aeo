@@ -62,6 +62,12 @@ export function verifyStripeWebhookSignature(payload: string, signatureHeader: s
     throw new Error('Invalid Stripe signature.');
   }
 
+  const timestampMs = Number(timestamp) * 1000;
+  const toleranceMs = 5 * 60 * 1000;
+  if (!Number.isFinite(timestampMs) || Math.abs(Date.now() - timestampMs) > toleranceMs) {
+    throw new Error('Stripe signature timestamp is outside the allowed tolerance.');
+  }
+
   const signedPayload = `${timestamp}.${payload}`;
   const actualSignature = crypto.createHmac('sha256', getStripeWebhookSecret()).update(signedPayload).digest('hex');
 

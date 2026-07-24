@@ -1,19 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable React Strict Mode for error detection
   reactStrictMode: true,
-  
-  // Enable SWC minification for faster builds
   swcMinify: true,
-  
-  // Add image optimization for external domains if needed
   images: {
-    domains: [],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: [],
   },
-  
-  // Configure webpack if needed
-  webpack: (config) => {
-    return config;
+
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ];
   },
 };
 

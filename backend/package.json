@@ -1,9 +1,0 @@
-{
-  "name": "rankup-aeo-backend",
-  "private": true,
-  "type": "module",
-  "main": "server.ts",
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  }
-}

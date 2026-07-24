@@ -5,6 +5,7 @@ import { crawlWebsite } from "@/lib/crawler";
 import { applyRateLimit, isUserUrlValidationError, validatePublicAuditUrl } from "@/lib/security";
 import { createAuditHistory, hasUsedFreeAudit } from "@/backend/services/audit-history.service";
 import { normalizeAuditDomain } from "@/backend/utils/domain";
+import { debugLog } from "@/lib/logger";
 
 export const maxDuration = 300;
 
@@ -52,11 +53,11 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log(`[Analyze] Starting orchestration for: ${normalizedUrl} (stream=${streamMode})`);
+    debugLog('[Analyze] Starting orchestration.', { url: normalizedUrl, streamMode });
 
     if (streamMode) {
       // STREAMING MODE: Send results progressively as newline-delimited JSON
-      console.log(`[Analyze] Streaming mode enabled`);
+      debugLog('[Analyze] Streaming mode enabled.');
 
       const encoder = new TextEncoder();
 
@@ -67,12 +68,12 @@ export async function POST(req: Request) {
             // Stage 1: Crawl first and stream crawl stage immediately
             const crawlResult = await crawlWebsite(normalizedUrl);
             controller.enqueue(encoder.encode(JSON.stringify({ stage: 'crawl', data: crawlResult }) + '\n'));
-            console.log(`[Analyze] Streamed crawl stage`);
+            debugLog('[Analyze] Streamed crawl stage.');
 
             // Stage 2: Run fast scan from prepared crawl data
             const fastResult = await performFastScan(normalizedUrl, { crawlPayload: crawlResult });
             controller.enqueue(encoder.encode(JSON.stringify({ stage: 'fast', data: fastResult.fast }) + '\n'));
-            console.log(`[Analyze] Streamed fast stage`);
+            debugLog('[Analyze] Streamed fast stage.');
 
             if (fastResult.fast.readiness.recommendedPath === 'foundation') {
               await createAuditHistory({
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
               });
               const totalMs = Date.now() - startTime;
               controller.enqueue(encoder.encode(JSON.stringify({ stage: 'complete', timing: { totalMs } }) + '\n'));
-              console.log(`[Analyze] Foundation path selected in ${totalMs}ms`);
+              debugLog('[Analyze] Foundation path selected.', { totalMs });
               controller.close();
               return;
             }
@@ -93,13 +94,13 @@ export async function POST(req: Request) {
             // Stage 3: Run deep scan and send results
             let deepReport = null;
             try {
-              console.log(`[Analyze] Starting deep scan...`);
+              debugLog('[Analyze] Starting deep scan.');
               const deepResult = await performDeepScan(fastResult.crawl, fastResult.fast);
               
               if (deepResult.success && deepResult.report) {
                 deepReport = deepResult.report;
                 controller.enqueue(encoder.encode(JSON.stringify({ stage: 'deep', data: deepResult.report }) + '\n'));
-                console.log(`[Analyze] Streamed deep stage (${deepResult.timing.totalMs}ms)`);
+                debugLog('[Analyze] Streamed deep stage.', { totalMs: deepResult.timing.totalMs });
               } else {
                 throw new Error(deepResult.error || 'Unknown deep scan error');
               }
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
             // Stage 4: Signal completion
             const totalMs = Date.now() - startTime;
             controller.enqueue(encoder.encode(JSON.stringify({ stage: 'complete', timing: { totalMs } }) + '\n'));
-            console.log(`[Analyze] Stream complete in ${totalMs}ms`);
+            debugLog('[Analyze] Stream complete.', { totalMs });
 
             controller.close();
           } catch (err: any) {
@@ -147,9 +148,9 @@ export async function POST(req: Request) {
     }
 
     // NON-STREAMING MODE: Run full flow and return combined result once complete
-    console.log(`[Analyze] Non-streaming mode - running full fast scan...`);
+    debugLog('[Analyze] Non-streaming mode, running fast scan.');
     const fastResult = await performFastScan(normalizedUrl);
-    console.log(`[Analyze] Fast scan completed in ${fastResult.timing.totalMs}ms`);
+    debugLog('[Analyze] Fast scan completed.', { totalMs: fastResult.timing.totalMs });
 
     if (fastResult.fast.readiness.recommendedPath === 'foundation') {
       const totalMs = Date.now() - startTime;
@@ -170,7 +171,7 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log(`[Analyze] Non-streaming mode - waiting for deep scan...`);
+    debugLog('[Analyze] Non-streaming mode, waiting for deep scan.');
     const deepResult = await performDeepScan(fastResult.crawl, fastResult.fast);
     const totalMs = Date.now() - startTime;
 
@@ -187,7 +188,7 @@ export async function POST(req: Request) {
       deep: deepResult.report,
     });
 
-    console.log(`[Analyze] Orchestration complete in ${totalMs}ms`);
+    debugLog('[Analyze] Orchestration complete.', { totalMs });
     return NextResponse.json({
       success: true,
       crawl: fastResult.crawl,

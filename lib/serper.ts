@@ -1,4 +1,4 @@
-
+import { debugLog } from './logger';
 
 // 1. EXPORT THE INTERFACE DIRECTLY
 // This fixes the "SearchScanResult not exported" error in other files.
@@ -18,8 +18,6 @@ export async function searchSerper(query: string, retries = 2): Promise<SearchSc
     console.error('SERPER_API_KEY is not set.');
     return [];
   }
-
-  // console.log(`🔍 Searching Serper.dev: ${query}`);
 
     for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -87,7 +85,7 @@ export async function performBrandSearch(brandName: string): Promise<SearchScanR
     `top companies like ${brandName}`              // For Category Context
   ];
 
-  console.log(`\n📋 Starting Deep Search for: ${brandName}...`);
+  debugLog('[Serper] Starting brand search.', { brandName });
 
   // 2. Run them in Parallel (Faster than serial)
   const promises = queries.map(q => searchSerper(q));
@@ -104,7 +102,7 @@ export async function performBrandSearch(brandName: string): Promise<SearchScanR
     }
   });
 
-  console.log(`✅ Search Complete. Found ${allResults.length} unique sources.`);
+  debugLog('[Serper] Brand search complete.', { sourceCount: allResults.length });
 
   // 4. Return the flat array (This fixes the Type Error in route.ts)
   return allResults;

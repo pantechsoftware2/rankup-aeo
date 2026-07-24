@@ -2,6 +2,7 @@ import { AEOReportData } from '@/types/aeo-report';
 import { SearchScanResult } from '@/lib/serper';
 import { callLLM, cleanJsonResponse } from '@/lib/openrouter';
 import { MODELS } from '@/lib/models';
+import { debugLog } from '@/lib/logger';
 
 // --- 2. SOURCE CLASSIFICATION (The Filter) ---
 function classifySource(url: string): 'TIER_A' | 'TIER_B' | 'TIER_C' {
@@ -51,7 +52,7 @@ export async function generateValidatedInsight(
   searchResults: SearchScanResult[]
 ): Promise<AEOReportData> {
 
-  console.log(`🤖 Analyzing Sources for: ${brandName}...`);
+  debugLog('[AEO Analyzer] Analyzing sources.', { brandName });
 
   let tierA = 0, tierB = 0, tierC = 0;
   searchResults.forEach(res => {
@@ -61,13 +62,13 @@ export async function generateValidatedInsight(
     if (type === 'TIER_C') tierC++;
   });
 
-  console.log(`📊 Breakdown: Tier A: ${tierA}, Tier B: ${tierB}, Tier C: ${tierC}`);
+  debugLog('[AEO Analyzer] Source tier breakdown.', { tierA, tierB, tierC });
 
   // --- STRICT GHOST TOWN CHECK ---
   const isGhostTown = tierA === 0;
 
   if (isGhostTown) {
-    console.log('👻 GHOST TOWN TRIGGERED.');
+    debugLog('[AEO Analyzer] Ghost-town path selected.');
     return {
       status: 'GHOST_TOWN',
       visibility: { score: 0, rank: 0, competitors: [] },
@@ -86,9 +87,9 @@ export async function generateValidatedInsight(
 
   // --- CALCULATE DETERMINISTIC SCORE ---
   const calculatedScore = calculateTemperanceScore(tierA, tierB, tierC);
-  console.log(`🧮 Temperance Score Calculated: ${calculatedScore}/100`);
+  debugLog('[AEO Analyzer] Temperance score calculated.', { score: calculatedScore });
 
-    console.log('✅ Passed Ghost Town check. Calling OpenRouter API...');
+  debugLog('[AEO Analyzer] Calling OpenRouter for insight generation.');
 
   try {
     const prompt = `
