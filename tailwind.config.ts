@@ -14,10 +14,23 @@ const config: Config = {
         rankup: "#387C44",
       },
       fontFamily: {
-        // This sets the default font (font-sans) to Inter
-        sans: ["var(--font-inter)", "sans-serif"],
-        // This creates the special class (font-space) for headings
-        space: ["var(--font-space)", "sans-serif"],
+        sans: [
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
+        ],
+        space: [
+          "Space Grotesk",
+          "Avenir Next",
+          "Trebuchet MS",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
       },
     },
   },
