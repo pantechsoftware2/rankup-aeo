@@ -19,7 +19,15 @@ const LOCAL_STORAGE_ROOT =
 const LOCAL_HISTORY_FILE = path.join(LOCAL_STORAGE_ROOT, 'history.json');
 
 function shouldUseLocalFallback(error: unknown) {
-  return process.env.NODE_ENV !== 'production' && error instanceof Error && /fetch failed/i.test(error.message);
+  if (!(error instanceof Error)) {
+    return true;
+  }
+
+  return (
+    /fetch failed/i.test(error.message) ||
+    /network/i.test(error.message) ||
+    /ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN/i.test(error.message)
+  );
 }
 
 async function readLocalAuditHistory() {
@@ -34,8 +42,12 @@ async function readLocalAuditHistory() {
 
 async function writeLocalAuditHistory(records: AuditHistoryRecord[]) {
   memoryAuditHistory.splice(0, memoryAuditHistory.length, ...records);
-  await mkdir(LOCAL_STORAGE_ROOT, { recursive: true });
-  await writeFile(LOCAL_HISTORY_FILE, JSON.stringify(records, null, 2), 'utf8');
+  try {
+    await mkdir(LOCAL_STORAGE_ROOT, { recursive: true });
+    await writeFile(LOCAL_HISTORY_FILE, JSON.stringify(records, null, 2), 'utf8');
+  } catch (error) {
+    console.warn('[AuditHistory] Local file persistence unavailable; using memory fallback.', error);
+  }
 }
 
 function toRow(input: AuditHistoryRecord) {
@@ -100,6 +112,7 @@ export async function hasUsedFreeAudit(domain: string) {
       if (!shouldUseLocalFallback(error)) {
         throw error;
       }
+      console.warn('[AuditHistory] Supabase history check unavailable; falling back locally.', error);
     }
   }
 
@@ -129,6 +142,7 @@ export async function getNextAuditVersion(domain: string) {
       if (!shouldUseLocalFallback(error)) {
         throw error;
       }
+      console.warn('[AuditHistory] Supabase version lookup unavailable; falling back locally.', error);
     }
   }
 
@@ -167,6 +181,7 @@ export async function createAuditHistory(input: AuditHistoryInput) {
       if (!shouldUseLocalFallback(error)) {
         throw error;
       }
+      console.warn('[AuditHistory] Supabase history save unavailable; falling back locally.', error);
     }
   }
 
@@ -197,6 +212,7 @@ export async function getAuditByStripeSession(stripeSessionId: string) {
       if (!shouldUseLocalFallback(error)) {
         throw error;
       }
+      console.warn('[AuditHistory] Supabase paid audit lookup unavailable; falling back locally.', error);
     }
   }
 
