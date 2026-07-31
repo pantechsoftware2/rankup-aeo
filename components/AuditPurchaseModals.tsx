@@ -130,11 +130,13 @@ export function AuthModal({ isOpen, isLoading, error, onClose, onAuthenticated }
   const [mode, setMode] = useState<AuthMode>('login');
   const [form, setForm] = useState({ fullName: '', email: '', password: '' });
   const [localError, setLocalError] = useState('');
+  const [verificationMessage, setVerificationMessage] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLocalError('');
+    setVerificationMessage('');
 
     if (mode === 'signup' && !form.fullName.trim()) {
       setLocalError('Enter your full name.');
@@ -162,6 +164,12 @@ export function AuthModal({ isOpen, isLoading, error, onClose, onAuthenticated }
 
       if (!response.ok) {
         setLocalError(result?.error || 'Authentication failed.');
+        return;
+      }
+
+      if (result?.requiresVerification) {
+        setLocalError('');
+        setVerificationMessage(result.message || 'Check your email to verify your account before logging in.');
         return;
       }
 
@@ -208,6 +216,7 @@ export function AuthModal({ isOpen, isLoading, error, onClose, onAuthenticated }
             onClick={() => {
               setMode(tab);
               setLocalError('');
+              setVerificationMessage('');
             }}
             className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
               mode === tab ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'
@@ -246,6 +255,11 @@ export function AuthModal({ isOpen, isLoading, error, onClose, onAuthenticated }
         />
 
         {shownError ? <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">{shownError}</div> : null}
+        {verificationMessage ? (
+          <div className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-200">
+            {verificationMessage}
+          </div>
+        ) : null}
 
         <button
           type="submit"

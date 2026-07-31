@@ -25,6 +25,8 @@ export async function createStripeCheckoutSession(input: {
   params.set('line_items[0][price_data][product_data][description]', `Brand-new live audit for ${input.domain}`);
   params.set('metadata[domain]', input.domain);
   params.set('metadata[userId]', input.userId);
+  params.set('metadata[email]', input.userEmail);
+  params.set('metadata[plan]', input.type);
   params.set('metadata[type]', input.type);
 
   const response = await fetch(`${STRIPE_API_BASE}/checkout/sessions`, {

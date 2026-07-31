@@ -39,6 +39,30 @@ create table if not exists public.audit_users (
   created_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.users (
+  id uuid primary key references auth.users(id) on delete cascade,
+  full_name text not null,
+  email text not null unique,
+  auth_provider text not null default 'email',
+  premium_unlocked boolean not null default false,
+  stripe_customer_id text,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  email text not null,
+  plan text not null,
+  payment_status text not null,
+  stripe_customer_id text,
+  stripe_session_id text not null unique,
+  webhook_verified boolean not null default false,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.audit_history (
   id uuid primary key,
   user_id uuid references public.audit_users(id) on delete set null,
@@ -69,7 +93,15 @@ create index if not exists audit_history_user_generated_at_idx
 create index if not exists audit_history_stripe_session_idx
   on public.audit_history (stripe_session_id);
 
+create index if not exists users_email_idx
+  on public.users (email);
+
+create index if not exists payments_user_created_at_idx
+  on public.payments (user_id, created_at desc);
+
 alter table public.deep_report_jobs enable row level security;
 alter table public.lead_logs enable row level security;
 alter table public.audit_users enable row level security;
+alter table public.users enable row level security;
+alter table public.payments enable row level security;
 alter table public.audit_history enable row level security;

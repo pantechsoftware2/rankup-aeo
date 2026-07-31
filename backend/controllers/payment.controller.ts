@@ -3,6 +3,7 @@ import { runAuditPipelineAndStore } from '@/backend/services/audit-history.servi
 import { createStripeCheckoutSession, verifyStripeWebhookSignature } from '@/backend/services/stripe.service';
 import { requireAuditUser } from '@/backend/middleware/auth.middleware';
 import { normalizeAuditDomain } from '@/backend/utils/domain';
+import { unlockPremiumAccess, upsertPaymentRecord } from '@/backend/services/payment-record.service';
 
 export async function createCheckoutSession(req: Request) {
   try {
@@ -26,6 +27,16 @@ export async function createCheckoutSession(req: Request) {
       userEmail: user.email,
     });
 
+    await upsertPaymentRecord({
+      userId: user.id,
+      email: user.email,
+      plan: type,
+      paymentStatus: 'pending',
+      stripeCustomerId: null,
+      stripeSessionId: session.id,
+      webhookVerified: false,
+    });
+
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create checkout session.';
@@ -47,8 +58,24 @@ export async function handleStripeWebhook(req: Request) {
       const session = event.data?.object;
       const domain = session?.metadata?.domain;
       const userId = session?.metadata?.userId;
+      const email = session?.metadata?.email || session?.customer_details?.email || session?.customer_email;
+      const plan = session?.metadata?.plan || session?.metadata?.type || 'audit_regeneration';
+      const stripeCustomerId = typeof session?.customer === 'string' ? session.customer : null;
 
       if (domain && session?.id) {
+        if (userId && email) {
+          await upsertPaymentRecord({
+            userId,
+            email,
+            plan,
+            paymentStatus: 'paid',
+            stripeCustomerId,
+            stripeSessionId: session.id,
+            webhookVerified: true,
+          });
+          await unlockPremiumAccess({ userId, stripeCustomerId });
+        }
+
         await runAuditPipelineAndStore({
           userId,
           domain,

@@ -23,10 +23,16 @@ function shouldUseLocalFallback(error: unknown) {
     return true;
   }
 
+  const message = error.message;
+
   return (
-    /fetch failed/i.test(error.message) ||
-    /network/i.test(error.message) ||
-    /ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN/i.test(error.message)
+    /fetch failed/i.test(message) ||
+    /network/i.test(message) ||
+    /schema cache/i.test(message) ||
+    /could not find the table/i.test(message) ||
+    /relation .* does not exist/i.test(message) ||
+    /PGRST205/i.test(message) ||
+    /ENOTFOUND|ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN/i.test(message)
   );
 }
 

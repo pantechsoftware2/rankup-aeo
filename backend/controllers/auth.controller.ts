@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import {
-  clearAuditSessionCookie,
-  createAuditUser,
+  clearAuthCookies,
   getCurrentAuditUser,
-  setAuditSessionCookie,
-  verifyAuditUser,
+  signInWithEmail,
+  signUpWithEmail,
 } from '@/backend/services/auth.service';
 
 export async function getMe() {
@@ -15,13 +14,18 @@ export async function getMe() {
 export async function signUp(req: Request) {
   try {
     const body = await req.json();
-    const user = await createAuditUser({
+    const result = await signUpWithEmail({
       fullName: body?.fullName || '',
       email: body?.email || '',
       password: body?.password || '',
     });
-    setAuditSessionCookie(user);
-    return NextResponse.json({ success: true, user });
+    return NextResponse.json({
+      success: true,
+      user: result.user,
+      authenticated: Boolean(result.session),
+      requiresVerification: result.requiresVerification,
+      message: result.requiresVerification ? 'Check your email to verify your account before logging in.' : undefined,
+    });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Unable to create account.' },
@@ -33,9 +37,11 @@ export async function signUp(req: Request) {
 export async function logIn(req: Request) {
   try {
     const body = await req.json();
-    const user = await verifyAuditUser(body?.email || '', body?.password || '');
-    setAuditSessionCookie(user);
-    return NextResponse.json({ success: true, user });
+    const user = await signInWithEmail({
+      email: body?.email || '',
+      password: body?.password || '',
+    });
+    return NextResponse.json({ success: true, authenticated: true, user });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Unable to log in.' },
@@ -44,7 +50,7 @@ export async function logIn(req: Request) {
   }
 }
 
-export function logOut() {
-  clearAuditSessionCookie();
+export async function logOut() {
+  await clearAuthCookies();
   return NextResponse.json({ success: true });
 }

@@ -21,6 +21,15 @@ export default function HomePageClient() {
     if ('requiresPayment' in result) {
       setPendingDomain(result.domain);
       setPurchaseError('');
+      const authResponse = await fetch('/api/auth/me');
+      const authResult = await authResponse.json().catch(() => null);
+
+      if (!authResult?.authenticated) {
+        window.sessionStorage.setItem('rankup:purchase-intent', JSON.stringify({ domain: result.domain }));
+        router.push('/login?next=/dashboard');
+        return;
+      }
+
       setPricingOpen(true);
       return;
     }
