@@ -27,15 +27,19 @@ export async function createCheckoutSession(req: Request) {
       userEmail: user.email,
     });
 
-    await upsertPaymentRecord({
-      userId: user.id,
-      email: user.email,
-      plan: type,
-      paymentStatus: 'pending',
-      stripeCustomerId: null,
-      stripeSessionId: session.id,
-      webhookVerified: false,
-    });
+    try {
+      await upsertPaymentRecord({
+        userId: user.id,
+        email: user.email,
+        plan: type,
+        paymentStatus: 'pending',
+        stripeCustomerId: null,
+        stripeSessionId: session.id,
+        webhookVerified: false,
+      });
+    } catch (recordError) {
+      console.warn('[Payments] Checkout session created without pending payment record.', recordError);
+    }
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
@@ -64,16 +68,20 @@ export async function handleStripeWebhook(req: Request) {
 
       if (domain && session?.id) {
         if (userId && email) {
-          await upsertPaymentRecord({
-            userId,
-            email,
-            plan,
-            paymentStatus: 'paid',
-            stripeCustomerId,
-            stripeSessionId: session.id,
-            webhookVerified: true,
-          });
-          await unlockPremiumAccess({ userId, stripeCustomerId });
+          try {
+            await upsertPaymentRecord({
+              userId,
+              email,
+              plan,
+              paymentStatus: 'paid',
+              stripeCustomerId,
+              stripeSessionId: session.id,
+              webhookVerified: true,
+            });
+            await unlockPremiumAccess({ userId, stripeCustomerId });
+          } catch (recordError) {
+            console.warn('[Payments] Paid payment record update failed.', recordError);
+          }
         }
 
         await runAuditPipelineAndStore({

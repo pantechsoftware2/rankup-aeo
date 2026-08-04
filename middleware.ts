@@ -12,6 +12,11 @@ function isAuthPage(pathname: string) {
   return AUTH_PAGES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+function getSafeNext(req: NextRequest) {
+  const next = req.nextUrl.searchParams.get('next') || '/dashboard';
+  return next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const { response, user } = await updateSession(req);
@@ -24,7 +29,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (isAuthPage(pathname) && hasSession) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    return NextResponse.redirect(new URL(getSafeNext(req), req.url));
   }
 
   return response;
