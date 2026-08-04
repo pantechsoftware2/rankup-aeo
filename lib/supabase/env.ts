@@ -1,5 +1,31 @@
+const CURRENT_SUPABASE_URL = 'https://vhimcwdandcfgwhjimvt.supabase.co';
+const DEAD_SUPABASE_REFS = new Set(['rsinvxlbfixscjiscogd']);
+
+function normalizeSupabaseUrl(rawUrl?: string) {
+  const url = rawUrl?.trim();
+
+  if (!url) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(url);
+    const projectRef = parsed.hostname.split('.')[0];
+
+    if (DEAD_SUPABASE_REFS.has(projectRef)) {
+      return CURRENT_SUPABASE_URL;
+    }
+
+    return parsed.origin;
+  } catch {
+    return url;
+  }
+}
+
 export function getSupabaseUrl() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || process.env.SUPABASE_URL?.trim();
+  const url =
+    normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+    normalizeSupabaseUrl(process.env.SUPABASE_URL);
 
   if (!url) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured.');
