@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ArrowRightIcon, MenuIcon, XIcon } from '@/components/InlineIcons';
+import AuthProfileMenu from '@/components/AuthProfileMenu';
 
 const links = [
   { href: '/services', label: 'Services' },
@@ -42,8 +43,10 @@ export default function SiteNav() {
             Get audit
             <ArrowRightIcon className="h-3 w-3" />
           </Link>
+          <AuthProfileMenu />
         </div>
         <div className="flex items-center gap-2 md:hidden">
+          <AuthProfileMenu onNavigate={() => setMenuOpen(false)} />
           <Link
             href="/audit-flow"
             prefetch={false}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AlertCircleIcon, ArrowRightIcon, CheckCircleIcon, MenuIcon, SparklesIcon, XIcon } from '@/components/InlineIcons';
+import AuthProfileMenu from '@/components/AuthProfileMenu';
 
 export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promise<void> }) {
   const [url, setUrl] = useState('');
@@ -112,8 +113,10 @@ export default function Hero({ onAnalyze }: { onAnalyze: (url: string) => Promis
             <span className="sr-only"> from the desktop navigation</span>
             <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </a>
+          <AuthProfileMenu />
         </div>
         <div className="flex items-center gap-2 md:hidden">
+          <AuthProfileMenu onNavigate={() => setMenuOpen(false)} />
           <Link
             href="/audit-flow"
             prefetch={false}
