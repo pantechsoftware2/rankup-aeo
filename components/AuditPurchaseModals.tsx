@@ -182,7 +182,7 @@ export function AuthModal({ isOpen, isLoading, error, onClose, onAuthenticated }
   };
 
   const continueWithGoogle = () => {
-    window.location.href = '/api/auth/google/start';
+    window.location.href = '/api/auth/google/start?next=/';
   };
 
   const shownError = localError || error;

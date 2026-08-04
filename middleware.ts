@@ -23,7 +23,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if ((pathname === '/' || isAuthPage(pathname)) && hasSession) {
+  if (isAuthPage(pathname) && hasSession) {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 

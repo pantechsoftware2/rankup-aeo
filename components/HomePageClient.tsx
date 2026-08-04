@@ -26,7 +26,7 @@ export default function HomePageClient() {
 
       if (!authResult?.authenticated) {
         window.sessionStorage.setItem('rankup:purchase-intent', JSON.stringify({ domain: result.domain }));
-        router.push('/login?next=/dashboard');
+        router.push('/login?next=/');
         return;
       }
 
@@ -65,6 +65,7 @@ export default function HomePageClient() {
         throw new Error(result?.error || 'Unable to start checkout.');
       }
 
+      window.sessionStorage.removeItem('rankup:purchase-intent');
       window.location.href = result.url;
     } catch (error) {
       setPurchaseError(error instanceof Error ? error.message : 'Unable to start checkout.');
@@ -109,29 +110,45 @@ export default function HomePageClient() {
 
     let cancelled = false;
 
-    const resumeAfterOAuth = async () => {
+    const resumePayPrompt = async () => {
+      let domain = '';
+      try {
+        domain = JSON.parse(intent)?.domain || '';
+      } catch {
+        window.sessionStorage.removeItem('rankup:purchase-intent');
+        return;
+      }
+
+      if (!domain) {
+        window.sessionStorage.removeItem('rankup:purchase-intent');
+        return;
+      }
+
       const response = await fetch('/api/auth/me');
       const result = await response.json().catch(() => null);
 
       if (!cancelled && result?.authenticated) {
-        await handleAuthenticated();
+        setPendingDomain(domain);
+        setPurchaseError('');
+        setPricingOpen(true);
       }
     };
 
-    resumeAfterOAuth().catch(() => {
+    resumePayPrompt().catch(() => {
       if (!cancelled) {
-        setPurchaseError('Unable to resume checkout after login. Please try again.');
+        setPurchaseError('Unable to resume your payment prompt after login. Please try again.');
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [handleAuthenticated]);
+  }, []);
 
   const closePricing = useCallback(() => {
     setPricingOpen(false);
     setPurchaseError('');
+    window.sessionStorage.removeItem('rankup:purchase-intent');
     clearPaymentRequirement();
   }, [clearPaymentRequirement]);
 
