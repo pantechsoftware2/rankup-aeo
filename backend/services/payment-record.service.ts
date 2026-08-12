@@ -1,13 +1,15 @@
 import 'server-only';
 
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { AUDIT_REGENERATION_PLAN } from '@/lib/audit-pricing';
 
 const TABLE_NAME = 'payments';
 
 export type ActivePlan = {
   plan: string;
   paymentStatus: 'paid';
-  stripeSessionId: string;
+  stripeSessionId: string | null;
+  stripeCustomerId: string | null;
   updatedAt: string | null;
 };
 
@@ -71,7 +73,7 @@ export async function getActivePlanForUser(userId: string): Promise<ActivePlan |
 
   const { data, error } = await supabase
     .from(TABLE_NAME)
-    .select('plan,payment_status,stripe_session_id,updated_at')
+    .select('plan,payment_status,stripe_session_id,stripe_customer_id,updated_at')
     .eq('user_id', userId)
     .eq('payment_status', 'paid')
     .order('updated_at', { ascending: false })
@@ -83,13 +85,34 @@ export async function getActivePlanForUser(userId: string): Promise<ActivePlan |
   }
 
   if (!data) {
-    return null;
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('premium_unlocked,stripe_customer_id,updated_at')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (profileError) {
+      throw new Error(`Failed to load active profile: ${profileError.message}`);
+    }
+
+    if (!profile?.premium_unlocked && !profile?.stripe_customer_id) {
+      return null;
+    }
+
+    return {
+      plan: AUDIT_REGENERATION_PLAN,
+      paymentStatus: 'paid',
+      stripeSessionId: null,
+      stripeCustomerId: profile.stripe_customer_id || null,
+      updatedAt: profile.updated_at,
+    };
   }
 
   return {
     plan: data.plan,
     paymentStatus: 'paid',
     stripeSessionId: data.stripe_session_id,
+    stripeCustomerId: data.stripe_customer_id || null,
     updatedAt: data.updated_at,
   };
 }

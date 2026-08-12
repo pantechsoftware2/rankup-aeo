@@ -11,6 +11,15 @@ import {
   AUDIT_REGENERATION_PLAN,
 } from '@/lib/audit-pricing';
 
+type PaymentStatusResult = {
+  authenticated?: boolean;
+  paid?: boolean;
+  stripeSessionId?: string | null;
+  stripeCustomerId?: string | null;
+  paymentId?: string | null;
+  requiresAuth?: boolean;
+};
+
 export default function HomePageClient() {
   const router = useRouter();
   const { startScan, paymentRequirement, clearPaymentRequirement } = useScanContext();
@@ -20,6 +29,29 @@ export default function HomePageClient() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState('');
   const [paymentNotice, setPaymentNotice] = useState('');
+
+  const checkPaymentStatus = useCallback(async (): Promise<PaymentStatusResult | null> => {
+    const response = await fetch('/api/payments/status');
+    const result = await response.json().catch(() => null);
+
+    if (response.status === 401 || result?.requiresAuth) {
+      return { authenticated: false, paid: false, requiresAuth: true };
+    }
+
+    if (!response.ok) {
+      throw new Error(result?.error || 'Unable to check payment status.');
+    }
+
+    return result;
+  }, []);
+
+  const continueToReport = useCallback((website: string) => {
+    clearPaymentRequirement();
+    setPricingOpen(false);
+    setPendingDomain('');
+    window.sessionStorage.removeItem('rankup:purchase-intent');
+    router.push(`/report-preview?url=${encodeURIComponent(website)}`);
+  }, [clearPaymentRequirement, router]);
 
   const handleAnalyze = async (website: string) => {
     const result = await startScan(website);
@@ -36,12 +68,17 @@ export default function HomePageClient() {
         return;
       }
 
+      const paymentStatus = await checkPaymentStatus();
+      if (paymentStatus?.paid) {
+        continueToReport(website);
+        return;
+      }
+
       setPricingOpen(true);
       return;
     }
 
-    const encodedUrl = encodeURIComponent(website);
-    router.push(`/report-preview?url=${encodedUrl}`);
+    continueToReport(website);
   };
 
   const startCheckout = useCallback(async (domain: string) => {
@@ -67,6 +104,15 @@ export default function HomePageClient() {
         return;
       }
 
+      if (result?.alreadyPaid || result?.paid) {
+        clearPaymentRequirement();
+        setPricingOpen(false);
+        setPendingDomain('');
+        window.sessionStorage.removeItem('rankup:purchase-intent');
+        setPaymentNotice('Payment already active. Your SEO audits are unlocked.');
+        return;
+      }
+
       if (!response.ok || !result?.url) {
         throw new Error(result?.error || 'Unable to start checkout.');
       }
@@ -78,7 +124,7 @@ export default function HomePageClient() {
     } finally {
       setCheckoutLoading(false);
     }
-  }, []);
+  }, [clearPaymentRequirement]);
 
   const handlePricingContinue = useCallback(async () => {
     const domain = pendingDomain || paymentRequirement?.domain;
@@ -134,6 +180,15 @@ export default function HomePageClient() {
       const result = await response.json().catch(() => null);
 
       if (!cancelled && result?.authenticated) {
+        const paymentStatus = await checkPaymentStatus();
+        if (paymentStatus?.paid) {
+          window.sessionStorage.removeItem('rankup:purchase-intent');
+          clearPaymentRequirement();
+          setPricingOpen(false);
+          setPendingDomain('');
+          return;
+        }
+
         setPendingDomain(domain);
         setPurchaseError('');
         setPricingOpen(true);
@@ -149,7 +204,7 @@ export default function HomePageClient() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [checkPaymentStatus, clearPaymentRequirement]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

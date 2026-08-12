@@ -7,7 +7,11 @@ import {
 } from '@/backend/services/stripe.service';
 import { requireAuditUser } from '@/backend/middleware/auth.middleware';
 import { normalizeAuditDomain } from '@/backend/utils/domain';
-import { unlockPremiumAccess, upsertPaymentRecord } from '@/backend/services/payment-record.service';
+import {
+  getActivePlanForUser,
+  unlockPremiumAccess,
+  upsertPaymentRecord,
+} from '@/backend/services/payment-record.service';
 import {
   AUDIT_REGENERATION_AMOUNT_MINOR,
   AUDIT_REGENERATION_CURRENCY,
@@ -17,6 +21,18 @@ import {
 export async function createCheckoutSession(req: Request) {
   try {
     const user = await requireAuditUser();
+    const activePlan = await getActivePlanForUser(user.id);
+    if (activePlan) {
+      return NextResponse.json({
+        alreadyPaid: true,
+        paid: true,
+        stripeSessionId: activePlan.stripeSessionId,
+        stripeCustomerId: activePlan.stripeCustomerId,
+        paymentId: activePlan.stripeSessionId || activePlan.stripeCustomerId,
+        plan: activePlan.plan,
+      });
+    }
+
     const body = await req.json();
     const domain = normalizeAuditDomain(body?.domain || '');
     const amount = Number(body?.amount || AUDIT_REGENERATION_AMOUNT_MINOR);
@@ -59,6 +75,29 @@ export async function createCheckoutSession(req: Request) {
     const message = error instanceof Error ? error.message : 'Failed to create checkout session.';
     return NextResponse.json(
       message === 'Authentication required.' ? { requiresAuth: true } : { error: message },
+      { status: message === 'Authentication required.' ? 401 : 500 }
+    );
+  }
+}
+
+export async function getPaymentStatus() {
+  try {
+    const user = await requireAuditUser();
+    const activePlan = await getActivePlanForUser(user.id);
+
+    return NextResponse.json({
+      authenticated: true,
+      paid: Boolean(activePlan),
+      stripeSessionId: activePlan?.stripeSessionId || null,
+      stripeCustomerId: activePlan?.stripeCustomerId || null,
+      paymentId: activePlan?.stripeSessionId || activePlan?.stripeCustomerId || null,
+      plan: activePlan?.plan || null,
+      updatedAt: activePlan?.updatedAt || null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load payment status.';
+    return NextResponse.json(
+      message === 'Authentication required.' ? { authenticated: false, paid: false, requiresAuth: true } : { error: message },
       { status: message === 'Authentication required.' ? 401 : 500 }
     );
   }
