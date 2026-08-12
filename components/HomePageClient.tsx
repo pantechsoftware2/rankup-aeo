@@ -19,6 +19,7 @@ export default function HomePageClient() {
   const [authOpen, setAuthOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState('');
+  const [paymentNotice, setPaymentNotice] = useState('');
 
   const handleAnalyze = async (website: string) => {
     const result = await startScan(website);
@@ -150,6 +151,54 @@ export default function HomePageClient() {
     };
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') !== 'success') {
+      return;
+    }
+
+    const sessionId = params.get('session_id') || '';
+    if (!sessionId) {
+      setPaymentNotice('Payment received. You can run SEO audits from this page.');
+      return;
+    }
+
+    let cancelled = false;
+
+    const confirmPayment = async () => {
+      setPaymentNotice('Confirming your payment...');
+
+      const response = await fetch('/api/payments/confirm-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const result = await response.json().catch(() => null);
+
+      if (cancelled) {
+        return;
+      }
+
+      if (!response.ok || !result?.paid) {
+        setPaymentNotice(result?.error || 'Payment confirmation is still processing. Please refresh in a moment.');
+        return;
+      }
+
+      setPaymentNotice('Payment successful. Your SEO audits are active now.');
+      router.replace('/', { scroll: false });
+    };
+
+    confirmPayment().catch((error) => {
+      if (!cancelled) {
+        setPaymentNotice(error instanceof Error ? error.message : 'Unable to confirm payment.');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
   const closePricing = useCallback(() => {
     setPricingOpen(false);
     setPurchaseError('');
@@ -160,6 +209,11 @@ export default function HomePageClient() {
   return (
     <>
       <Hero onAnalyze={handleAnalyze} />
+      {paymentNotice ? (
+        <div className="fixed left-1/2 top-24 z-[90] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-xl border border-green-400/20 bg-[#07120b]/95 px-4 py-3 text-sm font-semibold text-green-100 shadow-2xl shadow-black/30">
+          {paymentNotice}
+        </div>
+      ) : null}
       <PricingModal
         domain={pendingDomain || paymentRequirement?.domain || 'this domain'}
         isOpen={pricingOpen || Boolean(paymentRequirement)}

@@ -46,6 +46,32 @@ export async function createStripeCheckoutSession(input: {
   return result as { id: string; url: string };
 }
 
+export async function retrieveStripeCheckoutSession(sessionId: string) {
+  const response = await fetch(`${STRIPE_API_BASE}/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+    headers: {
+      Authorization: `Bearer ${getStripeSecretKey()}`,
+    },
+    cache: 'no-store',
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result?.error?.message || 'Failed to retrieve Stripe Checkout session.');
+  }
+
+  return result as {
+    id: string;
+    amount_total?: number | null;
+    currency?: string | null;
+    customer?: string | null;
+    customer_email?: string | null;
+    customer_details?: { email?: string | null } | null;
+    metadata?: Record<string, string | undefined> | null;
+    payment_intent?: string | null;
+    payment_status?: string | null;
+  };
+}
+
 export function verifyStripeWebhookSignature(payload: string, signatureHeader: string | null) {
   if (!signatureHeader) {
     throw new Error('Missing Stripe signature.');

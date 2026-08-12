@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { runAuditPipelineAndStore } from '@/backend/services/audit-history.service';
-import { createStripeCheckoutSession, verifyStripeWebhookSignature } from '@/backend/services/stripe.service';
+import {
+  createStripeCheckoutSession,
+  retrieveStripeCheckoutSession,
+  verifyStripeWebhookSignature,
+} from '@/backend/services/stripe.service';
 import { requireAuditUser } from '@/backend/middleware/auth.middleware';
 import { normalizeAuditDomain } from '@/backend/utils/domain';
 import { unlockPremiumAccess, upsertPaymentRecord } from '@/backend/services/payment-record.service';
@@ -53,6 +57,58 @@ export async function createCheckoutSession(req: Request) {
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create checkout session.';
+    return NextResponse.json(
+      message === 'Authentication required.' ? { requiresAuth: true } : { error: message },
+      { status: message === 'Authentication required.' ? 401 : 500 }
+    );
+  }
+}
+
+export async function confirmCheckoutSession(req: Request) {
+  try {
+    const user = await requireAuditUser();
+    const body = await req.json();
+    const sessionId = String(body?.sessionId || '');
+
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Missing checkout session.' }, { status: 400 });
+    }
+
+    const session = await retrieveStripeCheckoutSession(sessionId);
+    const metadata = session.metadata || {};
+    const sessionUserId = metadata.userId;
+    const plan = metadata.plan || metadata.type || AUDIT_REGENERATION_PLAN;
+    const domain = metadata.domain || '';
+    const email = metadata.email || session.customer_details?.email || session.customer_email || user.email;
+    const stripeCustomerId = typeof session.customer === 'string' ? session.customer : null;
+
+    if (sessionUserId && sessionUserId !== user.id) {
+      return NextResponse.json({ error: 'Checkout session does not belong to this user.' }, { status: 403 });
+    }
+
+    if (
+      session.payment_status !== 'paid' ||
+      session.amount_total !== AUDIT_REGENERATION_AMOUNT_PAISE ||
+      session.currency?.toLowerCase() !== AUDIT_REGENERATION_CURRENCY ||
+      plan !== AUDIT_REGENERATION_PLAN
+    ) {
+      return NextResponse.json({ paid: false, error: 'Payment has not been confirmed yet.' }, { status: 409 });
+    }
+
+    await upsertPaymentRecord({
+      userId: user.id,
+      email,
+      plan,
+      paymentStatus: 'paid',
+      stripeCustomerId,
+      stripeSessionId: session.id,
+      webhookVerified: false,
+    });
+    await unlockPremiumAccess({ userId: user.id, stripeCustomerId });
+
+    return NextResponse.json({ paid: true, domain });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to confirm payment.';
     return NextResponse.json(
       message === 'Authentication required.' ? { requiresAuth: true } : { error: message },
       { status: message === 'Authentication required.' ? 401 : 500 }
