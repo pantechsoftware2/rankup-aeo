@@ -8,7 +8,7 @@ import { getCurrentAuditUser } from "@/backend/services/auth.service";
 import { getActivePlanForUser } from "@/backend/services/payment-record.service";
 import { normalizeAuditDomain } from "@/backend/utils/domain";
 import { debugLog } from "@/lib/logger";
-import { AUDIT_REGENERATION_PRICE_INR } from "@/lib/audit-pricing";
+import { AUDIT_REGENERATION_CURRENCY, AUDIT_REGENERATION_PRICE } from "@/lib/audit-pricing";
 
 export const maxDuration = 300;
 
@@ -54,8 +54,8 @@ export async function POST(req: Request) {
     if (!activePlan && await hasUsedFreeAudit(domain)) {
       return NextResponse.json({
         requiresPayment: true,
-        price: AUDIT_REGENERATION_PRICE_INR,
-        currency: 'INR',
+        price: AUDIT_REGENERATION_PRICE,
+        currency: AUDIT_REGENERATION_CURRENCY.toUpperCase(),
         domain,
       });
     }

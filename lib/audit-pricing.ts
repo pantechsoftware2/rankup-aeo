@@ -1,8 +1,8 @@
 export const AUDIT_REGENERATION_PLAN = 'audit_regeneration';
-export const AUDIT_REGENERATION_PRICE_INR = 51;
-export const AUDIT_REGENERATION_AMOUNT_PAISE = AUDIT_REGENERATION_PRICE_INR * 100;
-export const AUDIT_REGENERATION_CURRENCY = 'inr';
+export const AUDIT_REGENERATION_PRICE = 10;
+export const AUDIT_REGENERATION_AMOUNT_MINOR = AUDIT_REGENERATION_PRICE * 100;
+export const AUDIT_REGENERATION_CURRENCY = 'usd';
 
 export function formatAuditRegenerationPrice() {
-  return `Rs. ${AUDIT_REGENERATION_PRICE_INR}`;
+  return `$${AUDIT_REGENERATION_PRICE}`;
 }

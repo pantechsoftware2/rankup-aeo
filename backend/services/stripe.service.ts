@@ -15,9 +15,11 @@ export async function createStripeCheckoutSession(input: {
   const params = new URLSearchParams();
 
   params.set('mode', 'payment');
-  params.set('success_url', `${appUrl}/?payment=success&session_id={CHECKOUT_SESSION_ID}`);
+  params.set('success_url', `${appUrl}/?checkout=return&session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${appUrl}/audit/cancel`);
   params.set('customer_email', input.userEmail);
+  params.set('payment_method_types[0]', 'card');
+  params.set('payment_method_options[card][request_three_d_secure]', 'challenge');
   params.set('line_items[0][quantity]', '1');
   params.set('line_items[0][price_data][currency]', input.currency);
   params.set('line_items[0][price_data][unit_amount]', String(input.amount));

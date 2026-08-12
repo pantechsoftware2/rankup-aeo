@@ -6,7 +6,7 @@ import Hero from '@/components/Hero';
 import { useScanContext } from '@/lib/scan-context';
 import { AuthModal, PricingModal } from '@/components/AuditPurchaseModals';
 import {
-  AUDIT_REGENERATION_AMOUNT_PAISE,
+  AUDIT_REGENERATION_AMOUNT_MINOR,
   AUDIT_REGENERATION_CURRENCY,
   AUDIT_REGENERATION_PLAN,
 } from '@/lib/audit-pricing';
@@ -54,7 +54,7 @@ export default function HomePageClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           domain,
-          amount: AUDIT_REGENERATION_AMOUNT_PAISE,
+          amount: AUDIT_REGENERATION_AMOUNT_MINOR,
           currency: AUDIT_REGENERATION_CURRENCY,
           type: AUDIT_REGENERATION_PLAN,
         }),
@@ -153,20 +153,21 @@ export default function HomePageClient() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('payment') !== 'success') {
+    const returnedFromCheckout = params.get('checkout') === 'return' || params.get('payment') === 'success';
+    if (!returnedFromCheckout) {
       return;
     }
 
     const sessionId = params.get('session_id') || '';
     if (!sessionId) {
-      setPaymentNotice('Payment received. You can run SEO audits from this page.');
+      setPaymentNotice('Returned from checkout. Payment status could not be checked.');
       return;
     }
 
     let cancelled = false;
 
     const confirmPayment = async () => {
-      setPaymentNotice('Confirming your payment...');
+      setPaymentNotice('Checking payment status...');
 
       const response = await fetch('/api/payments/confirm-session', {
         method: 'POST',
@@ -180,7 +181,7 @@ export default function HomePageClient() {
       }
 
       if (!response.ok || !result?.paid) {
-        setPaymentNotice(result?.error || 'Payment confirmation is still processing. Please refresh in a moment.');
+        setPaymentNotice(result?.error || 'Payment is not confirmed. Please complete checkout before audit access is unlocked.');
         return;
       }
 

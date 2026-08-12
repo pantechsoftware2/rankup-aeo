@@ -9,7 +9,7 @@ import { requireAuditUser } from '@/backend/middleware/auth.middleware';
 import { normalizeAuditDomain } from '@/backend/utils/domain';
 import { unlockPremiumAccess, upsertPaymentRecord } from '@/backend/services/payment-record.service';
 import {
-  AUDIT_REGENERATION_AMOUNT_PAISE,
+  AUDIT_REGENERATION_AMOUNT_MINOR,
   AUDIT_REGENERATION_CURRENCY,
   AUDIT_REGENERATION_PLAN,
 } from '@/lib/audit-pricing';
@@ -19,12 +19,12 @@ export async function createCheckoutSession(req: Request) {
     const user = await requireAuditUser();
     const body = await req.json();
     const domain = normalizeAuditDomain(body?.domain || '');
-    const amount = Number(body?.amount || AUDIT_REGENERATION_AMOUNT_PAISE);
+    const amount = Number(body?.amount || AUDIT_REGENERATION_AMOUNT_MINOR);
     const currency = String(body?.currency || AUDIT_REGENERATION_CURRENCY).toLowerCase();
     const type = String(body?.type || AUDIT_REGENERATION_PLAN);
 
     if (
-      amount !== AUDIT_REGENERATION_AMOUNT_PAISE ||
+      amount !== AUDIT_REGENERATION_AMOUNT_MINOR ||
       currency !== AUDIT_REGENERATION_CURRENCY ||
       type !== AUDIT_REGENERATION_PLAN
     ) {
@@ -88,7 +88,7 @@ export async function confirmCheckoutSession(req: Request) {
 
     if (
       session.payment_status !== 'paid' ||
-      session.amount_total !== AUDIT_REGENERATION_AMOUNT_PAISE ||
+      session.amount_total !== AUDIT_REGENERATION_AMOUNT_MINOR ||
       session.currency?.toLowerCase() !== AUDIT_REGENERATION_CURRENCY ||
       plan !== AUDIT_REGENERATION_PLAN
     ) {
