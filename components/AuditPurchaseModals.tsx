@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Loader, X } from 'lucide-react';
+import { formatAuditRegenerationPrice } from '@/lib/audit-pricing';
 
 type AuthMode = 'login' | 'signup';
 
@@ -78,11 +79,13 @@ function ModalShell({
 }
 
 export function PricingModal({ domain, isOpen, isLoading, error, onClose, onContinue }: PricingModalProps) {
+  const price = formatAuditRegenerationPrice();
+
   return (
     <ModalShell isOpen={isOpen} onClose={onClose}>
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-green-400">$10 audit regeneration</div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-widest text-green-400">{price} audit regeneration</div>
           <h2 className="text-2xl font-bold text-white">Generate Fresh Audit</h2>
         </div>
         <button
@@ -97,7 +100,7 @@ export function PricingModal({ domain, isOpen, isLoading, error, onClose, onCont
 
       <p className="mb-5 text-sm leading-6 text-zinc-300">
         You have already used your free audit for <span className="font-semibold text-white">{domain}</span>.
-        Generate a brand-new live SEO + AEO audit for only $10.
+        Generate a brand-new live SEO + AEO audit for only {price}.
       </p>
 
       <div className="mb-5 grid gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -120,7 +123,7 @@ export function PricingModal({ domain, isOpen, isLoading, error, onClose, onCont
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-400 px-4 py-3 text-sm font-bold text-black transition hover:bg-green-300 disabled:cursor-wait disabled:opacity-70"
       >
         {isLoading ? <Loader size={17} className="animate-spin" /> : null}
-        {isLoading ? 'Preparing checkout...' : 'Pay $10'}
+        {isLoading ? 'Preparing checkout...' : `Pay ${price}`}
       </button>
     </ModalShell>
   );

@@ -57,7 +57,6 @@ export async function upsertUserProfile(user: User, fullName?: string | null) {
       full_name: name,
       email: user.email.toLowerCase(),
       auth_provider: user.app_metadata?.provider || 'email',
-      premium_unlocked: false,
       updated_at: now,
     },
     { onConflict: 'id' }

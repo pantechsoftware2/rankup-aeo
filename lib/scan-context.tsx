@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { CrawlPayload } from '@/types/crawl';
 import type { DeepAuditReport } from '@/types/deep-audit';
 import type { FastScanResult } from '@/types/fast-scan';
+import { AUDIT_REGENERATION_PRICE_INR } from '@/lib/audit-pricing';
 
 export type ScanStage = 'idle' | 'crawling' | 'fast-scanning' | 'deep-scanning' | 'complete' | 'error';
 export type PaymentRequirement = {
@@ -65,7 +66,7 @@ export function ScanProvider({ children }: { children: React.ReactNode }) {
         if (result?.requiresPayment) {
           const requirement = {
             requiresPayment: true,
-            price: Number(result.price || 10),
+            price: Number(result.price || AUDIT_REGENERATION_PRICE_INR),
             domain: String(result.domain || normalizedUrl),
           } as const;
           setPaymentRequirement(requirement);

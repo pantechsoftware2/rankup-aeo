@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { exchangeOAuthCodeForSession } from '@/backend/services/auth.service';
+import { NextResponse, type NextRequest } from 'next/server';
+import { upsertUserProfile } from '@/backend/services/auth.service';
+import { createSupabaseServerClient } from '@/lib/supabase/create-server-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ function getSafeNext(req: Request) {
   return next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
   const error = url.searchParams.get('error_description') || url.searchParams.get('error');
@@ -27,8 +28,31 @@ export async function GET(req: Request) {
   }
 
   try {
-    await exchangeOAuthCodeForSession(code);
-    return NextResponse.redirect(new URL(getSafeNext(req), req.url));
+    let response = NextResponse.redirect(new URL(getSafeNext(req), req.url));
+    const supabase = createSupabaseServerClient({
+      getAll() {
+        return req.cookies.getAll();
+      },
+      setAll(cookiesToSet, headers) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+        Object.entries(headers).forEach(([key, value]) => {
+          response.headers.set(key, value);
+        });
+      },
+    });
+
+    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    if (exchangeError) {
+      throw new Error(exchangeError.message);
+    }
+
+    if (data.user) {
+      await upsertUserProfile(data.user);
+    }
+
+    return response;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unable to finish Google login.';
     return NextResponse.redirect(

@@ -4,17 +4,26 @@ import { createStripeCheckoutSession, verifyStripeWebhookSignature } from '@/bac
 import { requireAuditUser } from '@/backend/middleware/auth.middleware';
 import { normalizeAuditDomain } from '@/backend/utils/domain';
 import { unlockPremiumAccess, upsertPaymentRecord } from '@/backend/services/payment-record.service';
+import {
+  AUDIT_REGENERATION_AMOUNT_PAISE,
+  AUDIT_REGENERATION_CURRENCY,
+  AUDIT_REGENERATION_PLAN,
+} from '@/lib/audit-pricing';
 
 export async function createCheckoutSession(req: Request) {
   try {
     const user = await requireAuditUser();
     const body = await req.json();
     const domain = normalizeAuditDomain(body?.domain || '');
-    const amount = Number(body?.amount || 1000);
-    const currency = String(body?.currency || 'usd').toLowerCase();
-    const type = String(body?.type || 'audit_regeneration');
+    const amount = Number(body?.amount || AUDIT_REGENERATION_AMOUNT_PAISE);
+    const currency = String(body?.currency || AUDIT_REGENERATION_CURRENCY).toLowerCase();
+    const type = String(body?.type || AUDIT_REGENERATION_PLAN);
 
-    if (amount !== 1000 || currency !== 'usd' || type !== 'audit_regeneration') {
+    if (
+      amount !== AUDIT_REGENERATION_AMOUNT_PAISE ||
+      currency !== AUDIT_REGENERATION_CURRENCY ||
+      type !== AUDIT_REGENERATION_PLAN
+    ) {
       return NextResponse.json({ error: 'Invalid checkout request.' }, { status: 400 });
     }
 
@@ -63,7 +72,7 @@ export async function handleStripeWebhook(req: Request) {
       const domain = session?.metadata?.domain;
       const userId = session?.metadata?.userId;
       const email = session?.metadata?.email || session?.customer_details?.email || session?.customer_email;
-      const plan = session?.metadata?.plan || session?.metadata?.type || 'audit_regeneration';
+      const plan = session?.metadata?.plan || session?.metadata?.type || AUDIT_REGENERATION_PLAN;
       const stripeCustomerId = typeof session?.customer === 'string' ? session.customer : null;
 
       if (domain && session?.id) {

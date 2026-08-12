@@ -59,10 +59,17 @@ function getVercelOrigin() {
 }
 
 export function getSiteUrl(req?: Request) {
+  const requestOrigin = req ? new URL(req.url).origin : '';
+
+  if (requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1')) {
+    return requestOrigin.replace(/\/$/, '');
+  }
+
   return (
     process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
     getVercelOrigin() ||
-    (req ? new URL(req.url).origin : 'http://localhost:3000')
+    requestOrigin ||
+    'http://localhost:3000'
   ).replace(/\/$/, '');
 }

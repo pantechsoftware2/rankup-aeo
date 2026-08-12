@@ -15,7 +15,7 @@ export async function createStripeCheckoutSession(input: {
   const params = new URLSearchParams();
 
   params.set('mode', 'payment');
-  params.set('success_url', `${appUrl}/audit/success?session_id={CHECKOUT_SESSION_ID}`);
+  params.set('success_url', `${appUrl}/?payment=success&session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${appUrl}/audit/cancel`);
   params.set('customer_email', input.userEmail);
   params.set('line_items[0][quantity]', '1');

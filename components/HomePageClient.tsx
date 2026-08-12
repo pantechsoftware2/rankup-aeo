@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import Hero from '@/components/Hero';
 import { useScanContext } from '@/lib/scan-context';
 import { AuthModal, PricingModal } from '@/components/AuditPurchaseModals';
+import {
+  AUDIT_REGENERATION_AMOUNT_PAISE,
+  AUDIT_REGENERATION_CURRENCY,
+  AUDIT_REGENERATION_PLAN,
+} from '@/lib/audit-pricing';
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -48,9 +53,9 @@ export default function HomePageClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           domain,
-          amount: 1000,
-          currency: 'usd',
-          type: 'audit_regeneration',
+          amount: AUDIT_REGENERATION_AMOUNT_PAISE,
+          currency: AUDIT_REGENERATION_CURRENCY,
+          type: AUDIT_REGENERATION_PLAN,
         }),
       });
 

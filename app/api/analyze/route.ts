@@ -4,8 +4,11 @@ import { performDeepScan } from "@/lib/deep-scan";
 import { crawlWebsite } from "@/lib/crawler";
 import { applyRateLimit, isUserUrlValidationError, validatePublicAuditUrl } from "@/lib/security";
 import { createAuditHistory, hasUsedFreeAudit } from "@/backend/services/audit-history.service";
+import { getCurrentAuditUser } from "@/backend/services/auth.service";
+import { getActivePlanForUser } from "@/backend/services/payment-record.service";
 import { normalizeAuditDomain } from "@/backend/utils/domain";
 import { debugLog } from "@/lib/logger";
+import { AUDIT_REGENERATION_PRICE_INR } from "@/lib/audit-pricing";
 
 export const maxDuration = 300;
 
@@ -44,11 +47,15 @@ export async function POST(req: Request) {
 
     const normalizedUrl = await validatePublicAuditUrl(inputUrl);
     const domain = normalizeAuditDomain(normalizedUrl);
+    const user = await getCurrentAuditUser();
+    const activePlan = user ? await getActivePlanForUser(user.id) : null;
+    const auditPaymentStatus = activePlan ? 'paid' : 'free';
 
-    if (await hasUsedFreeAudit(domain)) {
+    if (!activePlan && await hasUsedFreeAudit(domain)) {
       return NextResponse.json({
         requiresPayment: true,
-        price: 10,
+        price: AUDIT_REGENERATION_PRICE_INR,
+        currency: 'INR',
         domain,
       });
     }
@@ -79,7 +86,7 @@ export async function POST(req: Request) {
               await createAuditHistory({
                 domain,
                 freeAuditUsed: true,
-                paymentStatus: 'free',
+                paymentStatus: auditPaymentStatus,
                 crawl: fastResult.crawl,
                 fast: fastResult.fast,
                 deep: null,
@@ -119,7 +126,7 @@ export async function POST(req: Request) {
             await createAuditHistory({
               domain,
               freeAuditUsed: true,
-              paymentStatus: 'free',
+              paymentStatus: auditPaymentStatus,
               crawl: fastResult.crawl,
               fast: fastResult.fast,
               deep: deepReport,
@@ -157,7 +164,7 @@ export async function POST(req: Request) {
       await createAuditHistory({
         domain,
         freeAuditUsed: true,
-        paymentStatus: 'free',
+        paymentStatus: auditPaymentStatus,
         crawl: fastResult.crawl,
         fast: fastResult.fast,
         deep: null,
@@ -182,7 +189,7 @@ export async function POST(req: Request) {
     await createAuditHistory({
       domain,
       freeAuditUsed: true,
-      paymentStatus: 'free',
+      paymentStatus: auditPaymentStatus,
       crawl: fastResult.crawl,
       fast: fastResult.fast,
       deep: deepResult.report,
