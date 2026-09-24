@@ -1,0 +1,7 @@
+id,scope,observation,evidence,confidence,severity,verification,status
+AUD-001,repository,"Public SEO route implementations are present","app/robots.ts; app/sitemap.ts; app/feed.xml/route.ts; app/llms.txt/route.ts",high,P1,"Inspect generated live endpoints after deployment",verified
+AUD-002,repository,"Public pages are statically rendered or server-rendered; no client-only marketing shell","npm run build output; SITE_PROFILE.md",high,P1,"Build and inspect rendered HTML",verified
+AUD-003,repository,"Production deployment identity is documented as Vercel but not verified to a project ID","PRODUCTION_DEPLOYMENT.md; no Vercel credentials",high,P1,"Inspect Vercel project domain assignment",blocked_access
+AUD-004,repository,"Search and conversion baseline is unavailable","No GSC/analytics exports found",high,P1,"Connect properties and save filtered exports",blocked_access
+AUD-005,public,"Homepage has direct answers and relevant internal navigation","public homepage web fetch",high,P2,"Review changed/live pages",verified
+AUD-006,public,"Live robots/sitemap/schema responses were not fully fetched in this run","restricted shell; web fetch limitation",medium,P1,"Fetch with production access",not_tested

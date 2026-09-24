@@ -1,0 +1,8 @@
+{
+  "status": "not_published",
+  "deployment_id": null,
+  "production_url": "https://www.rankupaeo.com",
+  "rollback_reference": null,
+  "reason": "Baseline/state initialization only; no code or public content change was made.",
+  "verified_at": "2026-09-23"
+}

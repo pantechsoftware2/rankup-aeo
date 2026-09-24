@@ -1,0 +1,23 @@
+{
+  "site_url": "https://www.rankupaeo.com",
+  "production_project_id": null,
+  "repo_or_cms": "Next.js App Router in Vercel; content is TypeScript/JSX",
+  "primary_conversion": "free visibility audit request followed by a qualified strategy call",
+  "markets": ["Worldwide", "United States", "India"],
+  "languages": ["en"],
+  "timezone": "Asia/Calcutta",
+  "publication_mode": "publish_after_qa",
+  "cadence": "monthly",
+  "max_new_articles_per_run": 2,
+  "initial_crawl_url_budget": 500,
+  "crawl_concurrency": 2,
+  "initial_live_requests_per_second": 1,
+  "max_ai_answer_samples_per_run": 60,
+  "approved_incremental_paid_budget_usd": null,
+  "approved_runtime_limit_minutes": 30,
+  "external_outreach_authorized": false,
+  "schedule_status": "not_active",
+  "schedule_reason": "No supported scheduler or existing recurring SEO runner was found in the repository or connected tools.",
+  "playbook_version": "1.0",
+  "initialized_at": "2026-09-23"
+}

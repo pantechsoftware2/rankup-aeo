@@ -1,0 +1,12 @@
+{
+  "as_of": "2026-09-23",
+  "facts": [
+    {"id":"fact-site-url","value":"https://www.rankupaeo.com","source":".env APP_URL and lib/seo.ts default","confidence":"high"},
+    {"id":"fact-framework","value":"Next.js 14 App Router","source":"package.json, app/, next.config.mjs","confidence":"high"},
+    {"id":"fact-hosting","value":"Vercel deployment is documented","source":"PRODUCTION_DEPLOYMENT.md","confidence":"high"},
+    {"id":"fact-content","value":"Four blog posts, four service pages, four industry pages in the current build","source":"npm run build output on 2026-09-23","confidence":"high"},
+    {"id":"fact-primary-conversion","value":"Free visibility audit followed by report and strategy call","source":"public homepage and app/audit-flow/page.tsx","confidence":"high"},
+    {"id":"claim-price","value":"90-day retainers start at $7,500/month","source":"public homepage, 2026-09-23","confidence":"medium","note":"Owner business claim; no independent validation."}
+  ],
+  "unknowns": ["Search Console data", "Analytics conversion data", "Vercel project/deployment ID", "production logs", "AI benchmark outputs", "backlink/referring coverage"]
+}
