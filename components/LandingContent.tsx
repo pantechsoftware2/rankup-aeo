@@ -398,8 +398,7 @@ export default function LandingContent() {
                   href="/services"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
                 >
-                  See all
-                  <span className="sr-only"> services</span>
+                  See all services
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -410,10 +409,9 @@ export default function LandingContent() {
                       href={`/services/${page.slug}`}
                       className="block rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
                     >
-                      <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
-                      <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
-                      <span className="sr-only"> about {page.keywords[0]}</span>
+                      <div className="text-lg font-bold text-white">{page.title}</div>
                     </Link>
+                    <p className="px-6 pt-3 text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
                   </article>
                 ))}
               </div>
@@ -432,8 +430,7 @@ export default function LandingContent() {
                   href="/industries"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-green-300"
                 >
-                  See all
-                  <span className="sr-only"> industries</span>
+                  See all industries
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -444,10 +441,9 @@ export default function LandingContent() {
                       href={`/industries/${page.slug}`}
                       className="block rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/20 hover:bg-white/[0.05]"
                     >
-                      <div className="mb-2 text-lg font-bold text-white">{page.title}</div>
-                      <p className="text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
-                      <span className="sr-only"> about {page.keywords[0]}</span>
+                      <div className="text-lg font-bold text-white">{page.title}</div>
                     </Link>
+                    <p className="px-6 pt-3 text-sm leading-relaxed text-gray-400">{page.excerpt}</p>
                   </article>
                 ))}
               </div>

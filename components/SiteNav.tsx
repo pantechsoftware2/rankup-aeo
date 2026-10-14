@@ -40,7 +40,7 @@ export default function SiteNav() {
             prefetch={false}
             className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-black transition hover:scale-105"
           >
-            Get audit
+            Get a free audit
             <ArrowRightIcon className="h-3 w-3" />
           </Link>
           <AuthProfileMenu />
@@ -52,7 +52,7 @@ export default function SiteNav() {
             prefetch={false}
             className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-black transition hover:bg-gray-200"
           >
-            Get audit
+            Start audit
             <ArrowRightIcon className="h-3 w-3" />
           </Link>
           <button
